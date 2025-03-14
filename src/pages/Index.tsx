@@ -1,9 +1,7 @@
 
-import TransportForm from "@/components/TransportForm";
 import TransportEntries from "@/components/TransportEntries";
 import { useState } from "react";
 import { TransportEntry } from "@/types/transport";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Truck } from "lucide-react";
 
@@ -12,6 +10,16 @@ const Index = () => {
 
   const handleAddEntry = (entry: TransportEntry) => {
     setEntries([...entries, entry]);
+  };
+
+  const handleUpdateEntry = (updatedEntry: TransportEntry) => {
+    setEntries(entries.map(entry => 
+      entry.id === updatedEntry.id ? updatedEntry : entry
+    ));
+  };
+
+  const handleDeleteEntry = (id: string) => {
+    setEntries(entries.filter(entry => entry.id !== id));
   };
 
   return (
@@ -27,48 +35,20 @@ const Index = () => {
           </div>
         </header>
 
-        <Tabs defaultValue="form" className="w-full">
-          <TabsList className="grid w-full grid-cols-2 mb-8">
-            <TabsTrigger value="form" className="text-sm md:text-base">
-              <span className="flex items-center gap-2">
-                Transport Entry
-              </span>
-            </TabsTrigger>
-            <TabsTrigger value="entries" className="text-sm md:text-base">
-              <span className="flex items-center gap-2">
-                View Entries {entries.length > 0 && <span className="ml-1 inline-flex h-5 w-5 items-center justify-center rounded-full bg-primary/20 text-xs font-medium">{entries.length}</span>}
-              </span>
-            </TabsTrigger>
-          </TabsList>
-          
-          <TabsContent value="form">
-            <Card className="border-none shadow-lg">
-              <CardHeader className="bg-primary/5 rounded-t-lg">
-                <CardTitle className="flex items-center gap-2 text-primary">
-                  Transport Entry Form
-                </CardTitle>
-                <CardDescription>Create a new transport entry with vehicle and payment details</CardDescription>
-              </CardHeader>
-              <CardContent className="p-6">
-                <TransportForm onSubmit={handleAddEntry} />
-              </CardContent>
-            </Card>
-          </TabsContent>
-          
-          <TabsContent value="entries">
-            <Card className="border-none shadow-lg">
-              <CardHeader className="bg-primary/5 rounded-t-lg">
-                <CardTitle className="flex items-center gap-2 text-primary">
-                  Transport Entries
-                </CardTitle>
-                <CardDescription>View and manage your transport entries</CardDescription>
-              </CardHeader>
-              <CardContent className="p-6">
-                <TransportEntries entries={entries} />
-              </CardContent>
-            </Card>
-          </TabsContent>
-        </Tabs>
+        <Card className="border-none shadow-lg animate-in">
+          <CardHeader className="bg-primary/5 rounded-t-lg">
+            <CardTitle className="flex items-center gap-2 text-primary">
+              Transport Entries
+            </CardTitle>
+            <CardDescription>View and manage your transport entries</CardDescription>
+          </CardHeader>
+          <CardContent className="p-6">
+            <TransportEntries 
+              entries={entries} 
+              onDelete={handleDeleteEntry} 
+            />
+          </CardContent>
+        </Card>
       </div>
     </div>
   );
