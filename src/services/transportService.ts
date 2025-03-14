@@ -66,9 +66,17 @@ export const fetchTransportEntries = async (): Promise<TransportEntry[]> => {
 
 export const createTransportEntry = async (entry: TransportEntry): Promise<TransportEntry | null> => {
   try {
+    // Remove id property when creating a new entry
+    const { id, ...entryWithoutId } = entry;
+    const preparedEntry = prepareEntryForDb(entryWithoutId as TransportEntry);
+    
+    // Add console logs to debug
+    console.log('Entry to create:', entry);
+    console.log('Prepared entry for DB:', preparedEntry);
+    
     const { data, error } = await supabase
       .from('transport_entries')
-      .insert(prepareEntryForDb(entry))
+      .insert(preparedEntry)
       .select()
       .single();
     
@@ -90,9 +98,14 @@ export const createTransportEntry = async (entry: TransportEntry): Promise<Trans
 
 export const updateTransportEntry = async (entry: TransportEntry): Promise<TransportEntry | null> => {
   try {
+    const preparedEntry = prepareEntryForDb(entry);
+    
+    // Remove id from the update data, as it's used in the where clause
+    const { id, ...updateData } = preparedEntry;
+    
     const { data, error } = await supabase
       .from('transport_entries')
-      .update(prepareEntryForDb(entry))
+      .update(updateData)
       .eq('id', entry.id)
       .select()
       .single();
