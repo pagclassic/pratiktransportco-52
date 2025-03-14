@@ -5,13 +5,19 @@ import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
+import { createTransportEntry } from "@/services/transportService";
+import { useQueryClient } from "@tanstack/react-query";
 
-const DataEntryPage = ({ onSubmit }: { onSubmit: (entry: TransportEntry) => void }) => {
+const DataEntryPage = () => {
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   
-  const handleSubmit = (entry: TransportEntry) => {
-    onSubmit(entry);
-    navigate('/');
+  const handleSubmit = async (entry: TransportEntry) => {
+    const newEntry = await createTransportEntry(entry);
+    if (newEntry) {
+      queryClient.invalidateQueries({ queryKey: ['transportEntries'] });
+      navigate('/');
+    }
   };
 
   return (

@@ -1,18 +1,24 @@
 
 import TransportEntries from "@/components/TransportEntries";
-import { TransportEntry } from "@/types/transport";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Truck } from "lucide-react";
-import { Dispatch, SetStateAction } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { fetchTransportEntries, deleteTransportEntry } from "@/services/transportService";
+import { Loader2 } from "lucide-react";
 
-interface IndexProps {
-  entries: TransportEntry[];
-  setEntries: Dispatch<SetStateAction<TransportEntry[]>>;
-}
+const Index = () => {
+  const queryClient = useQueryClient();
+  
+  const { data: entries = [], isLoading, isError } = useQuery({
+    queryKey: ['transportEntries'],
+    queryFn: fetchTransportEntries
+  });
 
-const Index = ({ entries, setEntries }: IndexProps) => {
-  const handleDeleteEntry = (id: string) => {
-    setEntries(entries.filter(entry => entry.id !== id));
+  const handleDeleteEntry = async (id: string) => {
+    const success = await deleteTransportEntry(id);
+    if (success) {
+      queryClient.invalidateQueries({ queryKey: ['transportEntries'] });
+    }
   };
 
   return (
@@ -36,10 +42,20 @@ const Index = ({ entries, setEntries }: IndexProps) => {
             <CardDescription>View and manage your transport entries</CardDescription>
           </CardHeader>
           <CardContent className="p-6">
-            <TransportEntries 
-              entries={entries} 
-              onDelete={handleDeleteEntry} 
-            />
+            {isLoading ? (
+              <div className="flex justify-center items-center py-12">
+                <Loader2 className="h-8 w-8 animate-spin text-primary" />
+              </div>
+            ) : isError ? (
+              <div className="text-center py-12 text-red-500">
+                Error loading entries. Please refresh the page.
+              </div>
+            ) : (
+              <TransportEntries 
+                entries={entries} 
+                onDelete={handleDeleteEntry} 
+              />
+            )}
           </CardContent>
         </Card>
       </div>

@@ -4,35 +4,61 @@ import { TransportEntry } from "@/types/transport";
 import { useNavigate, useParams } from "react-router-dom";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft } from "lucide-react";
-import { useState, useEffect } from "react";
+import { ArrowLeft, Loader2 } from "lucide-react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { fetchTransportEntries, updateTransportEntry } from "@/services/transportService";
 
-interface EditEntryPageProps {
-  entries: TransportEntry[];
-  onUpdate: (updatedEntry: TransportEntry) => void;
-}
-
-const EditEntryPage = ({ entries, onUpdate }: EditEntryPageProps) => {
+const EditEntryPage = () => {
   const navigate = useNavigate();
   const { id } = useParams<{ id: string }>();
-  const [entry, setEntry] = useState<TransportEntry | null>(null);
+  const queryClient = useQueryClient();
 
-  useEffect(() => {
-    const foundEntry = entries.find(e => e.id === id);
-    if (foundEntry) {
-      setEntry(foundEntry);
-    } else {
+  const { data: entries = [], isLoading } = useQuery({
+    queryKey: ['transportEntries'],
+    queryFn: fetchTransportEntries
+  });
+
+  const entry = entries.find(e => e.id === id);
+  
+  const handleSubmit = async (updatedEntry: TransportEntry) => {
+    const result = await updateTransportEntry(updatedEntry);
+    if (result) {
+      queryClient.invalidateQueries({ queryKey: ['transportEntries'] });
       navigate('/');
     }
-  }, [id, entries, navigate]);
-  
-  const handleSubmit = (updatedEntry: TransportEntry) => {
-    onUpdate(updatedEntry);
-    navigate('/');
   };
 
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-b from-slate-50 to-slate-100 p-4 md:p-8 flex justify-center items-center">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+
   if (!entry) {
-    return <div className="p-8 text-center">Loading entry...</div>;
+    return (
+      <div className="min-h-screen bg-gradient-to-b from-slate-50 to-slate-100 p-4 md:p-8">
+        <div className="mx-auto max-w-5xl">
+          <Button 
+            variant="ghost" 
+            onClick={() => navigate('/')} 
+            className="mb-4 -ml-2 text-slate-600 hover:text-slate-900"
+          >
+            <ArrowLeft className="mr-2 h-4 w-4" />
+            Back to Entries
+          </Button>
+          
+          <Card className="border-none shadow-lg animate-in">
+            <CardContent className="p-6">
+              <div className="text-center py-8">
+                Entry not found. The entry may have been deleted.
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    );
   }
 
   return (

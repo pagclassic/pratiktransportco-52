@@ -8,24 +8,17 @@ import Index from "./pages/Index";
 import DataEntryPage from "./pages/DataEntryPage";
 import EditEntryPage from "./pages/EditEntryPage";
 import NotFound from "./pages/NotFound";
-import { useState } from "react";
-import { TransportEntry } from "./types/transport";
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      refetchOnWindowFocus: false,
+      staleTime: 1000 * 60 * 5, // 5 minutes
+    },
+  },
+});
 
 const App = () => {
-  const [entries, setEntries] = useState<TransportEntry[]>([]);
-
-  const handleAddEntry = (entry: TransportEntry) => {
-    setEntries(prev => [...prev, entry]);
-  };
-
-  const handleUpdateEntry = (updatedEntry: TransportEntry) => {
-    setEntries(prev => prev.map(entry => 
-      entry.id === updatedEntry.id ? updatedEntry : entry
-    ));
-  };
-
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
@@ -33,32 +26,9 @@ const App = () => {
         <Sonner />
         <BrowserRouter>
           <Routes>
-            <Route 
-              path="/" 
-              element={
-                <Index 
-                  entries={entries} 
-                  setEntries={setEntries} 
-                />
-              } 
-            />
-            <Route 
-              path="/add-entry" 
-              element={
-                <DataEntryPage 
-                  onSubmit={handleAddEntry} 
-                />
-              } 
-            />
-            <Route 
-              path="/edit-entry/:id" 
-              element={
-                <EditEntryPage 
-                  entries={entries} 
-                  onUpdate={handleUpdateEntry} 
-                />
-              } 
-            />
+            <Route path="/" element={<Index />} />
+            <Route path="/add-entry" element={<DataEntryPage />} />
+            <Route path="/edit-entry/:id" element={<EditEntryPage />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>
