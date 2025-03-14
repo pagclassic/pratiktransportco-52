@@ -1,10 +1,9 @@
-
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { format } from "date-fns";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { CalendarIcon, Loader2, TruckIcon } from "lucide-react";
+import { CalendarIcon, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { v4 as uuidv4 } from "uuid";
 import { TransportEntry } from "@/types/transport";
@@ -51,11 +50,13 @@ const formSchema = z.object({
   balanceDate: z.date().nullable().default(null),
 });
 
-interface TransportFormProps {
+export interface TransportFormProps {
   onSubmit: (data: TransportEntry) => void;
+  initialData?: TransportEntry;
+  isEditing?: boolean;
 }
 
-const TransportForm = ({ onSubmit }: TransportFormProps) => {
+const TransportForm = ({ onSubmit, initialData, isEditing = false }: TransportFormProps) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
 
@@ -77,6 +78,26 @@ const TransportForm = ({ onSubmit }: TransportFormProps) => {
     },
   });
 
+  // Set form values based on initialData when editing
+  useEffect(() => {
+    if (initialData && isEditing) {
+      form.reset({
+        date: initialData.date,
+        vehicleNumber: initialData.vehicleNumber,
+        driverName: initialData.driverName,
+        driverMobile: initialData.driverMobile,
+        place: initialData.place,
+        transportName: initialData.transportName,
+        rentAmount: initialData.rentAmount,
+        advanceAmount: initialData.advanceAmount,
+        advanceDate: initialData.advanceDate,
+        advanceType: initialData.advanceType,
+        balanceStatus: initialData.balanceStatus,
+        balanceDate: initialData.balanceDate,
+      });
+    }
+  }, [initialData, isEditing, form]);
+
   const handleSubmit = async (values: z.infer<typeof formSchema>) => {
     setIsSubmitting(true);
     
@@ -85,8 +106,8 @@ const TransportForm = ({ onSubmit }: TransportFormProps) => {
       await new Promise((resolve) => setTimeout(resolve, 500));
       
       // Ensure all required fields are present according to TransportEntry type
-      const newEntry: TransportEntry = {
-        id: uuidv4(),
+      const entryData: TransportEntry = {
+        id: initialData?.id || uuidv4(),
         date: values.date,
         vehicleNumber: values.vehicleNumber,
         driverName: values.driverName,
@@ -101,27 +122,31 @@ const TransportForm = ({ onSubmit }: TransportFormProps) => {
         balanceDate: values.balanceDate,
       };
       
-      onSubmit(newEntry);
+      onSubmit(entryData);
       
       toast({
-        title: "Entry created",
-        description: "Transport entry has been successfully created",
+        title: isEditing ? "Entry updated" : "Entry created",
+        description: isEditing 
+          ? "Transport entry has been successfully updated" 
+          : "Transport entry has been successfully created",
       });
       
-      form.reset({
-        date: new Date(),
-        vehicleNumber: "",
-        driverName: "",
-        driverMobile: "",
-        place: "",
-        transportName: "",
-        rentAmount: 0,
-        advanceAmount: null,
-        advanceDate: null,
-        advanceType: "Cash",
-        balanceStatus: "UNPAID",
-        balanceDate: null,
-      });
+      if (!isEditing) {
+        form.reset({
+          date: new Date(),
+          vehicleNumber: "",
+          driverName: "",
+          driverMobile: "",
+          place: "",
+          transportName: "",
+          rentAmount: 0,
+          advanceAmount: null,
+          advanceDate: null,
+          advanceType: "Cash",
+          balanceStatus: "UNPAID",
+          balanceDate: null,
+        });
+      }
     } catch (error) {
       toast({
         title: "Error",
@@ -427,10 +452,10 @@ const TransportForm = ({ onSubmit }: TransportFormProps) => {
             {isSubmitting ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Submitting
+                {isEditing ? "Updating" : "Submitting"}
               </>
             ) : (
-              <>Submit</>
+              <>{isEditing ? "Update" : "Submit"}</>
             )}
           </Button>
         </div>

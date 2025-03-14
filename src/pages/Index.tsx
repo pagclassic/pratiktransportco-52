@@ -1,23 +1,16 @@
 
 import TransportEntries from "@/components/TransportEntries";
-import { useState } from "react";
 import { TransportEntry } from "@/types/transport";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Truck } from "lucide-react";
+import { Dispatch, SetStateAction } from "react";
 
-const Index = () => {
-  const [entries, setEntries] = useState<TransportEntry[]>([]);
+interface IndexProps {
+  entries: TransportEntry[];
+  setEntries: Dispatch<SetStateAction<TransportEntry[]>>;
+}
 
-  const handleAddEntry = (entry: TransportEntry) => {
-    setEntries([...entries, entry]);
-  };
-
-  const handleUpdateEntry = (updatedEntry: TransportEntry) => {
-    setEntries(entries.map(entry => 
-      entry.id === updatedEntry.id ? updatedEntry : entry
-    ));
-  };
-
+const Index = ({ entries, setEntries }: IndexProps) => {
   const handleDeleteEntry = (id: string) => {
     setEntries(entries.filter(entry => entry.id !== id));
   };
