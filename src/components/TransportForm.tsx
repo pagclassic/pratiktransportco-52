@@ -35,19 +35,20 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 
+// Make sure the schema matches the TransportEntry type
 const formSchema = z.object({
   date: z.date({ required_error: "Date is required" }),
   vehicleNumber: z.string().min(3, { message: "Vehicle number is required" }),
-  driverName: z.string().optional(),
-  driverMobile: z.string().optional(),
-  place: z.string().optional(),
-  transportName: z.string().optional(),
+  driverName: z.string().default(""),
+  driverMobile: z.string().default(""),
+  place: z.string().default(""),
+  transportName: z.string().default(""),
   rentAmount: z.coerce.number().min(1, { message: "Rent amount is required" }),
-  advanceAmount: z.coerce.number().optional(),
-  advanceDate: z.date().optional().nullable(),
-  advanceType: z.enum(["Cash", "Bank Transfer", "Check", "UPI"]),
-  balanceStatus: z.enum(["PAID", "UNPAID", "PARTIAL"]),
-  balanceDate: z.date().optional().nullable(),
+  advanceAmount: z.coerce.number().nullable().default(null),
+  advanceDate: z.date().nullable().default(null),
+  advanceType: z.enum(["Cash", "Bank Transfer", "Check", "UPI"]).default("Cash"),
+  balanceStatus: z.enum(["PAID", "UNPAID", "PARTIAL"]).default("UNPAID"),
+  balanceDate: z.date().nullable().default(null),
 });
 
 interface TransportFormProps {
@@ -68,7 +69,7 @@ const TransportForm = ({ onSubmit }: TransportFormProps) => {
       place: "",
       transportName: "",
       rentAmount: 0,
-      advanceAmount: 0,
+      advanceAmount: null,
       advanceDate: null,
       advanceType: "Cash",
       balanceStatus: "UNPAID",
@@ -83,9 +84,21 @@ const TransportForm = ({ onSubmit }: TransportFormProps) => {
       // Simulate API call
       await new Promise((resolve) => setTimeout(resolve, 500));
       
+      // Ensure all required fields are present according to TransportEntry type
       const newEntry: TransportEntry = {
         id: uuidv4(),
-        ...values,
+        date: values.date,
+        vehicleNumber: values.vehicleNumber,
+        driverName: values.driverName,
+        driverMobile: values.driverMobile,
+        place: values.place,
+        transportName: values.transportName,
+        rentAmount: values.rentAmount,
+        advanceAmount: values.advanceAmount,
+        advanceDate: values.advanceDate,
+        advanceType: values.advanceType,
+        balanceStatus: values.balanceStatus,
+        balanceDate: values.balanceDate,
       };
       
       onSubmit(newEntry);
@@ -103,7 +116,7 @@ const TransportForm = ({ onSubmit }: TransportFormProps) => {
         place: "",
         transportName: "",
         rentAmount: 0,
-        advanceAmount: 0,
+        advanceAmount: null,
         advanceDate: null,
         advanceType: "Cash",
         balanceStatus: "UNPAID",
