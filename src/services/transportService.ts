@@ -18,7 +18,18 @@ const prepareEntryForDb = (entry: TransportEntry) => {
     rent_amount: entry.rentAmount,
     advance_amount: entry.advanceAmount,
     advance_type: entry.advanceType,
-    balance_status: entry.balanceStatus
+    balance_status: entry.balanceStatus,
+    // Remove JavaScript properties that don't exist in the DB
+    vehicleNumber: undefined,
+    driverName: undefined,
+    driverMobile: undefined,
+    transportName: undefined,
+    rentAmount: undefined,
+    advanceAmount: undefined,
+    advanceDate: undefined,
+    advanceType: undefined,
+    balanceStatus: undefined,
+    balanceDate: undefined
   };
 };
 
@@ -81,6 +92,7 @@ export const createTransportEntry = async (entry: TransportEntry): Promise<Trans
       .single();
     
     if (error) {
+      console.error('Supabase error details:', error);
       throw error;
     }
     
