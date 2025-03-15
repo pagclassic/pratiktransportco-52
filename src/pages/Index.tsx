@@ -29,7 +29,7 @@ const Index = () => {
             <Truck className="h-6 w-6 text-primary" />
           </div>
           <div>
-            <h1 className="text-3xl md:text-4xl font-bold text-slate-800 mb-1">Transport Management</h1>
+            <h1 className="text-3xl md:text-4xl font-bold text-slate-800 mb-1">Pratik Transport Co</h1>
             <p className="text-slate-500">Manage your transport entries and track payments</p>
           </div>
         </header>

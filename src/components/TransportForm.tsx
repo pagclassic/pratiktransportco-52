@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { format } from "date-fns";
 import { z } from "zod";
@@ -63,7 +64,7 @@ const TransportForm = ({ onSubmit, initialData, isEditing = false }: TransportFo
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      date: new Date(),
+      date: undefined, // Changed from new Date() to undefined
       vehicleNumber: "",
       driverName: "",
       driverMobile: "",
@@ -133,7 +134,7 @@ const TransportForm = ({ onSubmit, initialData, isEditing = false }: TransportFo
       
       if (!isEditing) {
         form.reset({
-          date: new Date(),
+          date: undefined, // Changed from new Date() to undefined
           vehicleNumber: "",
           driverName: "",
           driverMobile: "",
@@ -161,7 +162,7 @@ const TransportForm = ({ onSubmit, initialData, isEditing = false }: TransportFo
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {/* Date Field */}
           <FormField
             control={form.control}
