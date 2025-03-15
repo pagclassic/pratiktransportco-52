@@ -85,6 +85,11 @@ const TransportEntries = ({ entries, onDelete }: TransportEntriesProps) => {
     });
   };
 
+  // Helper function to calculate balance amount
+  const calculateBalance = (rentAmount: number, advanceAmount: number | null): number => {
+    return rentAmount - (advanceAmount || 0);
+  };
+
   if (entries.length === 0) {
     return (
       <div className="space-y-4">
@@ -147,9 +152,12 @@ const TransportEntries = ({ entries, onDelete }: TransportEntriesProps) => {
               <TableHead>Date</TableHead>
               <TableHead>Vehicle Number</TableHead>
               <TableHead>Driver</TableHead>
+              <TableHead>Transport Name</TableHead>
               <TableHead>Place</TableHead>
               <TableHead>Rent Amount</TableHead>
               <TableHead>Advance</TableHead>
+              <TableHead>Balance</TableHead>
+              <TableHead>Balance Paid Date</TableHead>
               <TableHead>Status</TableHead>
               <TableHead className="text-right">Actions</TableHead>
             </TableRow>
@@ -157,7 +165,7 @@ const TransportEntries = ({ entries, onDelete }: TransportEntriesProps) => {
           <TableBody>
             {filteredEntries.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={8} className="text-center py-8 text-slate-500">
+                <TableCell colSpan={11} className="text-center py-8 text-slate-500">
                   No entries found matching your search.
                 </TableCell>
               </TableRow>
@@ -170,10 +178,17 @@ const TransportEntries = ({ entries, onDelete }: TransportEntriesProps) => {
                     {entry.vehicleNumber}
                   </TableCell>
                   <TableCell>{entry.driverName || "—"}</TableCell>
+                  <TableCell>{entry.transportName || "—"}</TableCell>
                   <TableCell>{entry.place || "—"}</TableCell>
                   <TableCell className="font-medium">₹{entry.rentAmount.toLocaleString()}</TableCell>
                   <TableCell>
                     {entry.advanceAmount ? `₹${entry.advanceAmount.toLocaleString()}` : "—"}
+                  </TableCell>
+                  <TableCell className="font-medium">
+                    ₹{calculateBalance(entry.rentAmount, entry.advanceAmount).toLocaleString()}
+                  </TableCell>
+                  <TableCell>
+                    {entry.balanceDate ? format(entry.balanceDate, "dd/MM/yyyy") : "—"}
                   </TableCell>
                   <TableCell>
                     <Badge 

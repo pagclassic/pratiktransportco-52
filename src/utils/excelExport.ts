@@ -8,23 +8,31 @@ export const exportToExcel = (entries: TransportEntry[]) => {
     "Date",
     "Vehicle Number",
     "Driver",
-    "Place",
     "Transport Name",
+    "Place",
     "Rent Amount",
     "Advance",
+    "Balance Amount",
     "Balance Status",
+    "Balance Date",
   ];
 
-  const rows = entries.map((entry) => [
-    format(entry.date, "dd/MM/yyyy"),
-    entry.vehicleNumber,
-    entry.driverName || "-",
-    entry.place || "-",
-    entry.transportName || "-",
-    entry.rentAmount.toString(),
-    entry.advanceAmount ? entry.advanceAmount.toString() : "-",
-    entry.balanceStatus,
-  ]);
+  const rows = entries.map((entry) => {
+    const balanceAmount = entry.rentAmount - (entry.advanceAmount || 0);
+    
+    return [
+      format(entry.date, "dd/MM/yyyy"),
+      entry.vehicleNumber,
+      entry.driverName || "-",
+      entry.transportName || "-",
+      entry.place || "-",
+      entry.rentAmount.toString(),
+      entry.advanceAmount ? entry.advanceAmount.toString() : "-",
+      balanceAmount.toString(),
+      entry.balanceStatus,
+      entry.balanceDate ? format(entry.balanceDate, "dd/MM/yyyy") : "-",
+    ];
+  });
 
   // Create CSV content
   const csvContent = [
