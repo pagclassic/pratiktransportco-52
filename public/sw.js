@@ -1,10 +1,10 @@
-const CACHE_NAME = 'component-garden-v1';
+const CACHE_NAME = 'transport-portal-v1';
 const urlsToCache = [
   '/',
   '/index.html',
   '/manifest.json',
-  '/icons/icon-192x192.png',
-  '/icons/icon-512x512.png'
+  '/icons/icon-192x192.jpeg',
+  '/icons/icon-512x512.jpeg'
 ];
 
 self.addEventListener('install', (event) => {

@@ -1,4 +1,3 @@
-
 import { format } from "date-fns";
 import {
   Table,
@@ -35,6 +34,7 @@ import {
 } from "@/components/ui/dialog";
 import { toast } from "@/hooks/use-toast";
 import { exportToExcel } from "@/utils/excelExport";
+import { Card, CardContent } from "@/components/ui/card";
 
 interface TransportEntriesProps {
   entries: TransportEntry[];
@@ -51,6 +51,19 @@ const TransportEntries = ({ entries, onDelete }: TransportEntriesProps) => {
     entry.place.toLowerCase().includes(searchTerm.toLowerCase()) ||
     entry.transportName.toLowerCase().includes(searchTerm.toLowerCase())
   );
+
+  // Calculate remaining balance from unpaid entries
+  const calculateRemainingBalance = () => {
+    return entries.reduce((total, entry) => {
+      if (entry.balanceStatus !== "PAID") {
+        const balance = entry.rentAmount - (entry.advanceAmount || 0);
+        return total + balance;
+      }
+      return total;
+    }, 0);
+  };
+
+  const remainingBalance = calculateRemainingBalance();
 
   const handleExport = () => {
     if (filteredEntries.length === 0) {
@@ -116,6 +129,22 @@ const TransportEntries = ({ entries, onDelete }: TransportEntriesProps) => {
 
   return (
     <div className="space-y-4">
+      {/* Remaining Balance Card */}
+      <Card className="bg-primary/5 border-primary/20">
+        <CardContent className="p-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <h3 className="text-sm font-medium text-primary/80">Remaining Balance</h3>
+              <p className="text-2xl font-bold text-primary">₹{remainingBalance.toLocaleString()}</p>
+            </div>
+            <div className="text-right">
+              <p className="text-sm text-primary/60">Total Unpaid Amount</p>
+              <p className="text-sm text-primary/80">Across all entries</p>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
       <div className="flex flex-col sm:flex-row justify-between gap-2 items-center">
         <div className="relative w-full sm:w-auto">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
@@ -146,23 +175,23 @@ const TransportEntries = ({ entries, onDelete }: TransportEntriesProps) => {
       </div>
       
       {/* Enhanced scrolling container with horizontal scroll support */}
-      <div className="border rounded-md overflow-hidden">
+      <div className="border rounded-lg overflow-hidden">
         <ScrollArea className="h-[500px]">
           <div className="min-w-[1200px]">
             <Table>
-              <TableHeader className="sticky top-0 bg-slate-50 z-10">
-                <TableRow>
-                  <TableHead>Date</TableHead>
-                  <TableHead>Vehicle Number</TableHead>
-                  <TableHead>Driver</TableHead>
-                  <TableHead>Transport Name</TableHead>
-                  <TableHead>Place</TableHead>
-                  <TableHead>Rent Amount</TableHead>
-                  <TableHead>Advance</TableHead>
-                  <TableHead>Balance</TableHead>
-                  <TableHead>Balance Paid Date</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead className="text-right">Actions</TableHead>
+              <TableHeader className="sticky top-0 bg-slate-50 z-10 border-b">
+                <TableRow className="hover:bg-slate-50">
+                  <TableHead className="font-semibold text-slate-700">Date</TableHead>
+                  <TableHead className="font-semibold text-slate-700">Vehicle Number</TableHead>
+                  <TableHead className="font-semibold text-slate-700">Driver</TableHead>
+                  <TableHead className="font-semibold text-slate-700">Transport Name</TableHead>
+                  <TableHead className="font-semibold text-slate-700">Place</TableHead>
+                  <TableHead className="font-semibold text-slate-700 text-right">Rent Amount</TableHead>
+                  <TableHead className="font-semibold text-slate-700 text-right">Advance</TableHead>
+                  <TableHead className="font-semibold text-slate-700 text-right">Balance</TableHead>
+                  <TableHead className="font-semibold text-slate-700">Balance Paid Date</TableHead>
+                  <TableHead className="font-semibold text-slate-700">Status</TableHead>
+                  <TableHead className="font-semibold text-slate-700 text-right">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -174,25 +203,25 @@ const TransportEntries = ({ entries, onDelete }: TransportEntriesProps) => {
                   </TableRow>
                 ) : (
                   filteredEntries.map((entry) => (
-                    <TableRow key={entry.id} className="hover:bg-slate-50/80 group">
-                      <TableCell>{format(entry.date, "dd/MM/yyyy")}</TableCell>
-                      <TableCell className="font-medium flex items-center gap-2">
-                        <Truck className="h-3.5 w-3.5 text-slate-400" />
-                        {entry.vehicleNumber}
+                    <TableRow key={entry.id} className="hover:bg-slate-50/80 group border-b last:border-b-0">
+                      <TableCell className="font-medium">{format(entry.date, "dd/MM/yyyy")}</TableCell>
+                      <TableCell className="font-medium">
+                        <div className="flex items-center gap-2">
+                          <Truck className="h-3.5 w-3.5 text-slate-400" />
+                          {entry.vehicleNumber}
+                        </div>
                       </TableCell>
                       <TableCell>{entry.driverName || "—"}</TableCell>
                       <TableCell>{entry.transportName || "—"}</TableCell>
                       <TableCell>{entry.place || "—"}</TableCell>
-                      <TableCell className="font-medium">₹{entry.rentAmount.toLocaleString()}</TableCell>
-                      <TableCell>
+                      <TableCell className="font-medium text-right">₹{entry.rentAmount.toLocaleString()}</TableCell>
+                      <TableCell className="text-right">
                         {entry.advanceAmount ? `₹${entry.advanceAmount.toLocaleString()}` : "—"}
                       </TableCell>
-                      <TableCell className="font-medium">
+                      <TableCell className="font-medium text-right">
                         ₹{calculateBalance(entry.rentAmount, entry.advanceAmount).toLocaleString()}
                       </TableCell>
-                      <TableCell>
-                        {entry.balanceDate ? format(entry.balanceDate, "dd/MM/yyyy") : "—"}
-                      </TableCell>
+                      <TableCell>{entry.balanceDate ? format(entry.balanceDate, "dd/MM/yyyy") : "—"}</TableCell>
                       <TableCell>
                         <Badge 
                           variant={
