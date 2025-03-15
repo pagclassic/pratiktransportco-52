@@ -145,7 +145,7 @@ const TransportEntries = ({ entries, onDelete }: TransportEntriesProps) => {
         </div>
       </div>
       
-      {/* Enhanced scrolling container */}
+      {/* Enhanced scrolling container with horizontal scroll support */}
       <div className="border rounded-md overflow-hidden">
         <ScrollArea className="h-[500px]">
           <div className="min-w-[1200px]">
