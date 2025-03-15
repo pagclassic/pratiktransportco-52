@@ -10,7 +10,7 @@ import {
 import { TransportEntry } from "@/types/transport";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { AlertCircle, Download, Edit, FileSpreadsheet, MoreHorizontal, Plus, Search, Trash, Truck } from "lucide-react";
+import { AlertCircle, Download, Edit, FileSpreadsheet, MoreHorizontal, Plus, Search, Trash, Truck, Wallet, Calendar } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -35,6 +35,13 @@ import {
 import { toast } from "@/hooks/use-toast";
 import { exportToExcel } from "@/utils/excelExport";
 import { Card, CardContent } from "@/components/ui/card";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 interface TransportEntriesProps {
   entries: TransportEntry[];
@@ -43,14 +50,36 @@ interface TransportEntriesProps {
 
 const TransportEntries = ({ entries, onDelete }: TransportEntriesProps) => {
   const [searchTerm, setSearchTerm] = useState("");
+  const [statusFilter, setStatusFilter] = useState<string>("ALL");
+  const [sortBy, setSortBy] = useState<"date" | "amount" | "balance">("date");
+  const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
   const navigate = useNavigate();
   
-  const filteredEntries = entries.filter(entry => 
-    entry.vehicleNumber.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    entry.driverName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    entry.place.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    entry.transportName.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filteredEntries = entries
+    .filter(entry => 
+      (entry.vehicleNumber.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      entry.driverName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      entry.place.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      entry.transportName.toLowerCase().includes(searchTerm.toLowerCase())) &&
+      (statusFilter === "ALL" || entry.balanceStatus === statusFilter)
+    )
+    .sort((a, b) => {
+      if (sortBy === "date") {
+        return sortOrder === "asc" 
+          ? new Date(a.date).getTime() - new Date(b.date).getTime()
+          : new Date(b.date).getTime() - new Date(a.date).getTime();
+      } else if (sortBy === "amount") {
+        return sortOrder === "asc"
+          ? a.rentAmount - b.rentAmount
+          : b.rentAmount - a.rentAmount;
+      } else {
+        const balanceA = a.rentAmount - (a.advanceAmount || 0);
+        const balanceB = b.rentAmount - (b.advanceAmount || 0);
+        return sortOrder === "asc"
+          ? balanceA - balanceB
+          : balanceB - balanceA;
+      }
+    });
 
   // Calculate remaining balance from unpaid entries
   const calculateRemainingBalance = () => {
@@ -129,6 +158,60 @@ const TransportEntries = ({ entries, onDelete }: TransportEntriesProps) => {
 
   return (
     <div className="space-y-4">
+      {/* Statistics Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <Card className="bg-white">
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-slate-600">Total Entries</p>
+                <p className="text-2xl font-bold text-slate-900">{entries.length}</p>
+              </div>
+              <div className="p-2 bg-primary/10 rounded-full">
+                <Truck className="h-4 w-4 text-primary" />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="bg-white">
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-slate-600">Unpaid Entries</p>
+                <p className="text-2xl font-bold text-red-600">
+                  {entries.filter(e => e.balanceStatus !== "PAID").length}
+                </p>
+              </div>
+              <div className="p-2 bg-red-100 rounded-full">
+                <AlertCircle className="h-4 w-4 text-red-600" />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="bg-white">
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-slate-600">This Month</p>
+                <p className="text-2xl font-bold text-blue-600">
+                  {entries.filter(e => {
+                    const today = new Date();
+                    const entryDate = new Date(e.date);
+                    return entryDate.getMonth() === today.getMonth() && 
+                           entryDate.getFullYear() === today.getFullYear();
+                  }).length}
+                </p>
+              </div>
+              <div className="p-2 bg-blue-100 rounded-full">
+                <Calendar className="h-4 w-4 text-blue-600" />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
       {/* Remaining Balance Card */}
       <Card className="bg-primary/5 border-primary/20">
         <CardContent className="p-4">
@@ -146,14 +229,44 @@ const TransportEntries = ({ entries, onDelete }: TransportEntriesProps) => {
       </Card>
 
       <div className="flex flex-col sm:flex-row justify-between gap-2 items-center">
-        <div className="relative w-full sm:w-auto">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
-          <Input 
-            placeholder="Search entries..." 
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="pl-9 w-full"
-          />
+        <div className="flex gap-2 w-full sm:w-auto">
+          <div className="relative flex-1 sm:flex-none">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+            <Input 
+              placeholder="Search entries..." 
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="pl-9 w-full"
+            />
+          </div>
+          <Select value={statusFilter} onValueChange={setStatusFilter}>
+            <SelectTrigger className="w-[180px]">
+              <SelectValue placeholder="Filter by status" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="ALL">All Status</SelectItem>
+              <SelectItem value="PAID">Paid</SelectItem>
+              <SelectItem value="UNPAID">Unpaid</SelectItem>
+              <SelectItem value="PARTIAL">Partial</SelectItem>
+            </SelectContent>
+          </Select>
+          <Select value={sortBy} onValueChange={(value: "date" | "amount" | "balance") => setSortBy(value)}>
+            <SelectTrigger className="w-[180px]">
+              <SelectValue placeholder="Sort by" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="date">Date</SelectItem>
+              <SelectItem value="amount">Amount</SelectItem>
+              <SelectItem value="balance">Balance</SelectItem>
+            </SelectContent>
+          </Select>
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={() => setSortOrder(prev => prev === "asc" ? "desc" : "asc")}
+          >
+            {sortOrder === "asc" ? "↑" : "↓"}
+          </Button>
         </div>
         
         <div className="flex gap-2 w-full sm:w-auto">
@@ -175,23 +288,23 @@ const TransportEntries = ({ entries, onDelete }: TransportEntriesProps) => {
       </div>
       
       {/* Enhanced scrolling container with horizontal scroll support */}
-      <div className="border rounded-lg overflow-hidden">
+      <div className="border rounded-lg overflow-hidden bg-white shadow-sm">
         <ScrollArea className="h-[500px]">
           <div className="min-w-[1200px]">
             <Table>
-              <TableHeader className="sticky top-0 bg-slate-50 z-10 border-b">
+              <TableHeader className="sticky top-0 bg-slate-50 z-10 border-b border-slate-200">
                 <TableRow className="hover:bg-slate-50">
-                  <TableHead className="font-semibold text-slate-700">Date</TableHead>
-                  <TableHead className="font-semibold text-slate-700">Vehicle Number</TableHead>
-                  <TableHead className="font-semibold text-slate-700">Driver</TableHead>
-                  <TableHead className="font-semibold text-slate-700">Transport Name</TableHead>
-                  <TableHead className="font-semibold text-slate-700">Place</TableHead>
-                  <TableHead className="font-semibold text-slate-700 text-right">Rent Amount</TableHead>
-                  <TableHead className="font-semibold text-slate-700 text-right">Advance</TableHead>
-                  <TableHead className="font-semibold text-slate-700 text-right">Balance</TableHead>
-                  <TableHead className="font-semibold text-slate-700">Balance Paid Date</TableHead>
-                  <TableHead className="font-semibold text-slate-700">Status</TableHead>
-                  <TableHead className="font-semibold text-slate-700 text-right">Actions</TableHead>
+                  <TableHead className="font-semibold text-slate-700 py-4">Date</TableHead>
+                  <TableHead className="font-semibold text-slate-700 py-4">Vehicle Number</TableHead>
+                  <TableHead className="font-semibold text-slate-700 py-4">Driver</TableHead>
+                  <TableHead className="font-semibold text-slate-700 py-4">Transport Name</TableHead>
+                  <TableHead className="font-semibold text-slate-700 py-4">Place</TableHead>
+                  <TableHead className="font-semibold text-slate-700 text-right py-4">Rent Amount</TableHead>
+                  <TableHead className="font-semibold text-slate-700 text-right py-4">Advance</TableHead>
+                  <TableHead className="font-semibold text-slate-700 text-right py-4">Balance</TableHead>
+                  <TableHead className="font-semibold text-slate-700 py-4">Balance Paid Date</TableHead>
+                  <TableHead className="font-semibold text-slate-700 py-4">Status</TableHead>
+                  <TableHead className="font-semibold text-slate-700 text-right py-4">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -203,26 +316,29 @@ const TransportEntries = ({ entries, onDelete }: TransportEntriesProps) => {
                   </TableRow>
                 ) : (
                   filteredEntries.map((entry) => (
-                    <TableRow key={entry.id} className="hover:bg-slate-50/80 group border-b last:border-b-0">
-                      <TableCell className="font-medium">{format(entry.date, "dd/MM/yyyy")}</TableCell>
-                      <TableCell className="font-medium">
+                    <TableRow 
+                      key={entry.id} 
+                      className="hover:bg-slate-50/80 group border-b border-slate-100 last:border-b-0"
+                    >
+                      <TableCell className="font-medium py-4">{format(entry.date, "dd/MM/yyyy")}</TableCell>
+                      <TableCell className="font-medium py-4">
                         <div className="flex items-center gap-2">
                           <Truck className="h-3.5 w-3.5 text-slate-400" />
                           {entry.vehicleNumber}
                         </div>
                       </TableCell>
-                      <TableCell>{entry.driverName || "—"}</TableCell>
-                      <TableCell>{entry.transportName || "—"}</TableCell>
-                      <TableCell>{entry.place || "—"}</TableCell>
-                      <TableCell className="font-medium text-right">₹{entry.rentAmount.toLocaleString()}</TableCell>
-                      <TableCell className="text-right">
+                      <TableCell className="py-4">{entry.driverName || "—"}</TableCell>
+                      <TableCell className="py-4">{entry.transportName || "—"}</TableCell>
+                      <TableCell className="py-4">{entry.place || "—"}</TableCell>
+                      <TableCell className="font-medium text-right py-4">₹{entry.rentAmount.toLocaleString()}</TableCell>
+                      <TableCell className="text-right py-4">
                         {entry.advanceAmount ? `₹${entry.advanceAmount.toLocaleString()}` : "—"}
                       </TableCell>
-                      <TableCell className="font-medium text-right">
+                      <TableCell className="font-medium text-right py-4">
                         ₹{calculateBalance(entry.rentAmount, entry.advanceAmount).toLocaleString()}
                       </TableCell>
-                      <TableCell>{entry.balanceDate ? format(entry.balanceDate, "dd/MM/yyyy") : "—"}</TableCell>
-                      <TableCell>
+                      <TableCell className="py-4">{entry.balanceDate ? format(entry.balanceDate, "dd/MM/yyyy") : "—"}</TableCell>
+                      <TableCell className="py-4">
                         <Badge 
                           variant={
                             entry.balanceStatus === "PAID" 
@@ -242,7 +358,7 @@ const TransportEntries = ({ entries, onDelete }: TransportEntriesProps) => {
                           {entry.balanceStatus}
                         </Badge>
                       </TableCell>
-                      <TableCell className="text-right">
+                      <TableCell className="text-right py-4">
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
                             <Button variant="ghost" size="icon" className="opacity-0 group-hover:opacity-100">
