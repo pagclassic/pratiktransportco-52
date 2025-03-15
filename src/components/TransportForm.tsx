@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { format } from "date-fns";
 import { z } from "zod";
@@ -302,7 +301,13 @@ const TransportForm = ({ onSubmit, initialData, isEditing = false }: TransportFo
               <FormItem>
                 <FormLabel>Advance Amount</FormLabel>
                 <FormControl>
-                  <Input type="number" min="0" placeholder="Amount paid in advance" {...field} />
+                  <Input 
+                    type="number" 
+                    min="0" 
+                    placeholder="Amount paid in advance" 
+                    value={field.value ?? ''} 
+                    onChange={(e) => field.onChange(e.target.value ? Number(e.target.value) : null)}
+                  />
                 </FormControl>
                 <FormMessage />
               </FormItem>

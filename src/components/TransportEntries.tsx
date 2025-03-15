@@ -55,6 +55,24 @@ const TransportEntries = ({ entries, onDelete }: TransportEntriesProps) => {
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
   const navigate = useNavigate();
   
+  // Calculate statistics
+  const totalEntries = entries.length;
+  const unpaidEntries = entries.filter(e => e.balanceStatus !== "PAID").length;
+  const thisMonthEntries = entries.filter(e => {
+    const today = new Date();
+    const entryDate = new Date(e.date);
+    return entryDate.getMonth() === today.getMonth() && 
+           entryDate.getFullYear() === today.getFullYear();
+  }).length;
+
+  // Calculate remaining balance
+  const remainingBalance = entries.reduce((total, entry) => {
+    if (entry.balanceStatus !== "PAID") {
+      return total + (entry.rentAmount - (entry.advanceAmount || 0));
+    }
+    return total;
+  }, 0);
+
   const filteredEntries = entries
     .filter(entry => 
       (entry.vehicleNumber.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -80,19 +98,6 @@ const TransportEntries = ({ entries, onDelete }: TransportEntriesProps) => {
           : balanceB - balanceA;
       }
     });
-
-  // Calculate remaining balance from unpaid entries
-  const calculateRemainingBalance = () => {
-    return entries.reduce((total, entry) => {
-      if (entry.balanceStatus !== "PAID") {
-        const balance = entry.rentAmount - (entry.advanceAmount || 0);
-        return total + balance;
-      }
-      return total;
-    }, 0);
-  };
-
-  const remainingBalance = calculateRemainingBalance();
 
   const handleExport = () => {
     if (filteredEntries.length === 0) {
@@ -127,11 +132,6 @@ const TransportEntries = ({ entries, onDelete }: TransportEntriesProps) => {
     });
   };
 
-  // Helper function to calculate balance amount
-  const calculateBalance = (rentAmount: number, advanceAmount: number | null): number => {
-    return rentAmount - (advanceAmount || 0);
-  };
-
   if (entries.length === 0) {
     return (
       <div className="space-y-4">
@@ -160,12 +160,12 @@ const TransportEntries = ({ entries, onDelete }: TransportEntriesProps) => {
     <div className="space-y-4">
       {/* Statistics Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        <Card className="bg-white">
+        <Card>
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-slate-600">Total Entries</p>
-                <p className="text-2xl font-bold text-slate-900">{entries.length}</p>
+                <p className="text-2xl font-bold text-slate-900">{totalEntries}</p>
               </div>
               <div className="p-2 bg-primary/10 rounded-full">
                 <Truck className="h-4 w-4 text-primary" />
@@ -174,14 +174,12 @@ const TransportEntries = ({ entries, onDelete }: TransportEntriesProps) => {
           </CardContent>
         </Card>
 
-        <Card className="bg-white">
+        <Card>
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-slate-600">Unpaid Entries</p>
-                <p className="text-2xl font-bold text-red-600">
-                  {entries.filter(e => e.balanceStatus !== "PAID").length}
-                </p>
+                <p className="text-2xl font-bold text-red-600">{unpaidEntries}</p>
               </div>
               <div className="p-2 bg-red-100 rounded-full">
                 <AlertCircle className="h-4 w-4 text-red-600" />
@@ -190,19 +188,12 @@ const TransportEntries = ({ entries, onDelete }: TransportEntriesProps) => {
           </CardContent>
         </Card>
 
-        <Card className="bg-white">
+        <Card>
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-slate-600">This Month</p>
-                <p className="text-2xl font-bold text-blue-600">
-                  {entries.filter(e => {
-                    const today = new Date();
-                    const entryDate = new Date(e.date);
-                    return entryDate.getMonth() === today.getMonth() && 
-                           entryDate.getFullYear() === today.getFullYear();
-                  }).length}
-                </p>
+                <p className="text-2xl font-bold text-blue-600">{thisMonthEntries}</p>
               </div>
               <div className="p-2 bg-blue-100 rounded-full">
                 <Calendar className="h-4 w-4 text-blue-600" />
@@ -228,6 +219,7 @@ const TransportEntries = ({ entries, onDelete }: TransportEntriesProps) => {
         </CardContent>
       </Card>
 
+      {/* Search and Actions */}
       <div className="flex flex-col sm:flex-row justify-between gap-2 items-center">
         <div className="flex gap-2 w-full sm:w-auto">
           <div className="relative flex-1 sm:flex-none">
@@ -269,42 +261,42 @@ const TransportEntries = ({ entries, onDelete }: TransportEntriesProps) => {
           </Button>
         </div>
         
-        <div className="flex gap-2 w-full sm:w-auto">
+        <div className="flex gap-2">
           <Button 
             onClick={handleExport}
             variant="outline"
-            className="gap-2 flex-1 sm:flex-none"
+            className="gap-2"
           >
             <FileSpreadsheet className="h-4 w-4" /> Export Excel
           </Button>
           
           <Button 
             onClick={handleAddNew}
-            className="gap-2 flex-1 sm:flex-none"
+            className="gap-2"
           >
             <Plus className="h-4 w-4" /> Add New Entry
           </Button>
         </div>
       </div>
-      
-      {/* Enhanced scrolling container with horizontal scroll support */}
+
+      {/* Table */}
       <div className="border rounded-lg overflow-hidden bg-white shadow-sm">
         <ScrollArea className="h-[500px]">
           <div className="min-w-[1200px]">
             <Table>
-              <TableHeader className="sticky top-0 bg-slate-50 z-10 border-b border-slate-200">
-                <TableRow className="hover:bg-slate-50">
-                  <TableHead className="font-semibold text-slate-700 py-4">Date</TableHead>
-                  <TableHead className="font-semibold text-slate-700 py-4">Vehicle Number</TableHead>
-                  <TableHead className="font-semibold text-slate-700 py-4">Driver</TableHead>
-                  <TableHead className="font-semibold text-slate-700 py-4">Transport Name</TableHead>
-                  <TableHead className="font-semibold text-slate-700 py-4">Place</TableHead>
-                  <TableHead className="font-semibold text-slate-700 text-right py-4">Rent Amount</TableHead>
-                  <TableHead className="font-semibold text-slate-700 text-right py-4">Advance</TableHead>
-                  <TableHead className="font-semibold text-slate-700 text-right py-4">Balance</TableHead>
-                  <TableHead className="font-semibold text-slate-700 py-4">Balance Paid Date</TableHead>
-                  <TableHead className="font-semibold text-slate-700 py-4">Status</TableHead>
-                  <TableHead className="font-semibold text-slate-700 text-right py-4">Actions</TableHead>
+              <TableHeader>
+                <TableRow>
+                  <TableHead className="font-semibold">Date</TableHead>
+                  <TableHead className="font-semibold">Vehicle Number</TableHead>
+                  <TableHead className="font-semibold">Driver</TableHead>
+                  <TableHead className="font-semibold">Transport Name</TableHead>
+                  <TableHead className="font-semibold">Place</TableHead>
+                  <TableHead className="font-semibold text-right">Rent Amount</TableHead>
+                  <TableHead className="font-semibold text-right">Advance</TableHead>
+                  <TableHead className="font-semibold text-right">Balance</TableHead>
+                  <TableHead className="font-semibold">Balance Paid Date</TableHead>
+                  <TableHead className="font-semibold">Status</TableHead>
+                  <TableHead className="font-semibold text-right">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -317,28 +309,30 @@ const TransportEntries = ({ entries, onDelete }: TransportEntriesProps) => {
                 ) : (
                   filteredEntries.map((entry) => (
                     <TableRow 
-                      key={entry.id} 
-                      className="hover:bg-slate-50/80 group border-b border-slate-100 last:border-b-0"
+                      key={entry.id}
+                      className="group"
                     >
-                      <TableCell className="font-medium py-4">{format(entry.date, "dd/MM/yyyy")}</TableCell>
-                      <TableCell className="font-medium py-4">
+                      <TableCell>{format(new Date(entry.date), "dd/MM/yyyy")}</TableCell>
+                      <TableCell>
                         <div className="flex items-center gap-2">
                           <Truck className="h-3.5 w-3.5 text-slate-400" />
                           {entry.vehicleNumber}
                         </div>
                       </TableCell>
-                      <TableCell className="py-4">{entry.driverName || "—"}</TableCell>
-                      <TableCell className="py-4">{entry.transportName || "—"}</TableCell>
-                      <TableCell className="py-4">{entry.place || "—"}</TableCell>
-                      <TableCell className="font-medium text-right py-4">₹{entry.rentAmount.toLocaleString()}</TableCell>
-                      <TableCell className="text-right py-4">
+                      <TableCell>{entry.driverName || "—"}</TableCell>
+                      <TableCell>{entry.transportName || "—"}</TableCell>
+                      <TableCell>{entry.place || "—"}</TableCell>
+                      <TableCell className="text-right">₹{entry.rentAmount.toLocaleString()}</TableCell>
+                      <TableCell className="text-right">
                         {entry.advanceAmount ? `₹${entry.advanceAmount.toLocaleString()}` : "—"}
                       </TableCell>
-                      <TableCell className="font-medium text-right py-4">
-                        ₹{calculateBalance(entry.rentAmount, entry.advanceAmount).toLocaleString()}
+                      <TableCell className="text-right">
+                        ₹{(entry.rentAmount - (entry.advanceAmount || 0)).toLocaleString()}
                       </TableCell>
-                      <TableCell className="py-4">{entry.balanceDate ? format(entry.balanceDate, "dd/MM/yyyy") : "—"}</TableCell>
-                      <TableCell className="py-4">
+                      <TableCell>
+                        {entry.balanceDate ? format(new Date(entry.balanceDate), "dd/MM/yyyy") : "—"}
+                      </TableCell>
+                      <TableCell>
                         <Badge 
                           variant={
                             entry.balanceStatus === "PAID" 
@@ -358,7 +352,7 @@ const TransportEntries = ({ entries, onDelete }: TransportEntriesProps) => {
                           {entry.balanceStatus}
                         </Badge>
                       </TableCell>
-                      <TableCell className="text-right py-4">
+                      <TableCell className="text-right">
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
                             <Button variant="ghost" size="icon" className="opacity-0 group-hover:opacity-100">

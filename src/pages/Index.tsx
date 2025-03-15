@@ -1,10 +1,11 @@
-
 import TransportEntries from "@/components/TransportEntries";
+import ReportsDashboard from "@/components/ReportsDashboard";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Truck } from "lucide-react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { fetchTransportEntries, deleteTransportEntry } from "@/services/transportService";
 import { Loader2 } from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 const Index = () => {
   const queryClient = useQueryClient();
@@ -37,9 +38,9 @@ const Index = () => {
         <Card className="border-none shadow-lg animate-in">
           <CardHeader className="bg-primary/5 rounded-t-lg">
             <CardTitle className="flex items-center gap-2 text-primary">
-              Transport Entries
+              Transport Management
             </CardTitle>
-            <CardDescription>View and manage your transport entries</CardDescription>
+            <CardDescription>View and manage your transport entries and reports</CardDescription>
           </CardHeader>
           <CardContent className="p-6">
             {isLoading ? (
@@ -51,10 +52,21 @@ const Index = () => {
                 Error loading entries. Please refresh the page.
               </div>
             ) : (
-              <TransportEntries 
-                entries={entries} 
-                onDelete={handleDeleteEntry} 
-              />
+              <Tabs defaultValue="entries" className="space-y-4">
+                <TabsList className="grid w-full grid-cols-2 bg-white shadow-sm mb-4">
+                  <TabsTrigger value="entries" className="text-base py-3">Transport Entries</TabsTrigger>
+                  <TabsTrigger value="reports" className="text-base py-3">Reports & Analytics</TabsTrigger>
+                </TabsList>
+                <TabsContent value="entries" className="mt-0">
+                  <TransportEntries 
+                    entries={entries} 
+                    onDelete={handleDeleteEntry} 
+                  />
+                </TabsContent>
+                <TabsContent value="reports" className="mt-0">
+                  <ReportsDashboard entries={entries} />
+                </TabsContent>
+              </Tabs>
             )}
           </CardContent>
         </Card>
