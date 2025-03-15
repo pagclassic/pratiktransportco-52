@@ -145,9 +145,9 @@ const TransportEntries = ({ entries, onDelete }: TransportEntriesProps) => {
         </div>
       </div>
       
-      {/* We'll wrap the whole table in a ScrollArea for both horizontal and vertical scrolling */}
-      <div className="border rounded-md">
-        <ScrollArea className="h-[500px] w-full">
+      {/* Enhanced scrolling container */}
+      <div className="border rounded-md overflow-hidden">
+        <ScrollArea className="h-[500px]">
           <div className="min-w-[1200px]">
             <Table>
               <TableHeader className="sticky top-0 bg-slate-50 z-10">
