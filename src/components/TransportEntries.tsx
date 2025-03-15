@@ -145,119 +145,124 @@ const TransportEntries = ({ entries, onDelete }: TransportEntriesProps) => {
         </div>
       </div>
       
-      <ScrollArea className="h-[500px] rounded-md border">
-        <Table>
-          <TableHeader className="sticky top-0 bg-slate-50 z-10">
-            <TableRow>
-              <TableHead>Date</TableHead>
-              <TableHead>Vehicle Number</TableHead>
-              <TableHead>Driver</TableHead>
-              <TableHead>Transport Name</TableHead>
-              <TableHead>Place</TableHead>
-              <TableHead>Rent Amount</TableHead>
-              <TableHead>Advance</TableHead>
-              <TableHead>Balance</TableHead>
-              <TableHead>Balance Paid Date</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead className="text-right">Actions</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {filteredEntries.length === 0 ? (
-              <TableRow>
-                <TableCell colSpan={11} className="text-center py-8 text-slate-500">
-                  No entries found matching your search.
-                </TableCell>
-              </TableRow>
-            ) : (
-              filteredEntries.map((entry) => (
-                <TableRow key={entry.id} className="hover:bg-slate-50/80 group">
-                  <TableCell>{format(entry.date, "dd/MM/yyyy")}</TableCell>
-                  <TableCell className="font-medium flex items-center gap-2">
-                    <Truck className="h-3.5 w-3.5 text-slate-400" />
-                    {entry.vehicleNumber}
-                  </TableCell>
-                  <TableCell>{entry.driverName || "—"}</TableCell>
-                  <TableCell>{entry.transportName || "—"}</TableCell>
-                  <TableCell>{entry.place || "—"}</TableCell>
-                  <TableCell className="font-medium">₹{entry.rentAmount.toLocaleString()}</TableCell>
-                  <TableCell>
-                    {entry.advanceAmount ? `₹${entry.advanceAmount.toLocaleString()}` : "—"}
-                  </TableCell>
-                  <TableCell className="font-medium">
-                    ₹{calculateBalance(entry.rentAmount, entry.advanceAmount).toLocaleString()}
-                  </TableCell>
-                  <TableCell>
-                    {entry.balanceDate ? format(entry.balanceDate, "dd/MM/yyyy") : "—"}
-                  </TableCell>
-                  <TableCell>
-                    <Badge 
-                      variant={
-                        entry.balanceStatus === "PAID" 
-                          ? "default" 
-                          : entry.balanceStatus === "PARTIAL" 
-                            ? "outline" 
-                            : "destructive"
-                      }
-                      className={
-                        entry.balanceStatus === "PAID" 
-                          ? "bg-green-100 text-green-800 hover:bg-green-200" 
-                          : entry.balanceStatus === "PARTIAL" 
-                            ? "bg-amber-100 text-amber-800 border-amber-300 hover:bg-amber-200" 
-                            : "bg-red-100 text-red-800 hover:bg-red-200"
-                      }
-                    >
-                      {entry.balanceStatus}
-                    </Badge>
-                  </TableCell>
-                  <TableCell className="text-right">
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="icon" className="opacity-0 group-hover:opacity-100">
-                          <MoreHorizontal className="h-4 w-4" />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                        <DropdownMenuItem onClick={() => handleEdit(entry.id)}>
-                          <Edit className="mr-2 h-4 w-4" /> Edit
-                        </DropdownMenuItem>
-                        <Dialog>
-                          <DialogTrigger asChild>
-                            <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
-                              <Trash className="mr-2 h-4 w-4" /> Delete
-                            </DropdownMenuItem>
-                          </DialogTrigger>
-                          <DialogContent>
-                            <DialogHeader>
-                              <DialogTitle>Confirm deletion</DialogTitle>
-                              <DialogDescription>
-                                Are you sure you want to delete this entry? This action cannot be undone.
-                              </DialogDescription>
-                            </DialogHeader>
-                            <DialogFooter>
-                              <DialogClose asChild>
-                                <Button variant="outline">Cancel</Button>
-                              </DialogClose>
-                              <DialogClose asChild>
-                                <Button 
-                                  variant="destructive" 
-                                  onClick={() => handleDelete(entry.id)}
-                                >
-                                  Delete
-                                </Button>
-                              </DialogClose>
-                            </DialogFooter>
-                          </DialogContent>
-                        </Dialog>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  </TableCell>
+      {/* We'll wrap the whole table in a ScrollArea for both horizontal and vertical scrolling */}
+      <div className="border rounded-md">
+        <ScrollArea className="h-[500px] w-full">
+          <div className="min-w-[1200px]">
+            <Table>
+              <TableHeader className="sticky top-0 bg-slate-50 z-10">
+                <TableRow>
+                  <TableHead>Date</TableHead>
+                  <TableHead>Vehicle Number</TableHead>
+                  <TableHead>Driver</TableHead>
+                  <TableHead>Transport Name</TableHead>
+                  <TableHead>Place</TableHead>
+                  <TableHead>Rent Amount</TableHead>
+                  <TableHead>Advance</TableHead>
+                  <TableHead>Balance</TableHead>
+                  <TableHead>Balance Paid Date</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead className="text-right">Actions</TableHead>
                 </TableRow>
-              ))
-            )}
-          </TableBody>
-        </Table>
-      </ScrollArea>
+              </TableHeader>
+              <TableBody>
+                {filteredEntries.length === 0 ? (
+                  <TableRow>
+                    <TableCell colSpan={11} className="text-center py-8 text-slate-500">
+                      No entries found matching your search.
+                    </TableCell>
+                  </TableRow>
+                ) : (
+                  filteredEntries.map((entry) => (
+                    <TableRow key={entry.id} className="hover:bg-slate-50/80 group">
+                      <TableCell>{format(entry.date, "dd/MM/yyyy")}</TableCell>
+                      <TableCell className="font-medium flex items-center gap-2">
+                        <Truck className="h-3.5 w-3.5 text-slate-400" />
+                        {entry.vehicleNumber}
+                      </TableCell>
+                      <TableCell>{entry.driverName || "—"}</TableCell>
+                      <TableCell>{entry.transportName || "—"}</TableCell>
+                      <TableCell>{entry.place || "—"}</TableCell>
+                      <TableCell className="font-medium">₹{entry.rentAmount.toLocaleString()}</TableCell>
+                      <TableCell>
+                        {entry.advanceAmount ? `₹${entry.advanceAmount.toLocaleString()}` : "—"}
+                      </TableCell>
+                      <TableCell className="font-medium">
+                        ₹{calculateBalance(entry.rentAmount, entry.advanceAmount).toLocaleString()}
+                      </TableCell>
+                      <TableCell>
+                        {entry.balanceDate ? format(entry.balanceDate, "dd/MM/yyyy") : "—"}
+                      </TableCell>
+                      <TableCell>
+                        <Badge 
+                          variant={
+                            entry.balanceStatus === "PAID" 
+                              ? "default" 
+                              : entry.balanceStatus === "PARTIAL" 
+                                ? "outline" 
+                                : "destructive"
+                          }
+                          className={
+                            entry.balanceStatus === "PAID" 
+                              ? "bg-green-100 text-green-800 hover:bg-green-200" 
+                              : entry.balanceStatus === "PARTIAL" 
+                                ? "bg-amber-100 text-amber-800 border-amber-300 hover:bg-amber-200" 
+                                : "bg-red-100 text-red-800 hover:bg-red-200"
+                          }
+                        >
+                          {entry.balanceStatus}
+                        </Badge>
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" size="icon" className="opacity-0 group-hover:opacity-100">
+                              <MoreHorizontal className="h-4 w-4" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <DropdownMenuItem onClick={() => handleEdit(entry.id)}>
+                              <Edit className="mr-2 h-4 w-4" /> Edit
+                            </DropdownMenuItem>
+                            <Dialog>
+                              <DialogTrigger asChild>
+                                <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
+                                  <Trash className="mr-2 h-4 w-4" /> Delete
+                                </DropdownMenuItem>
+                              </DialogTrigger>
+                              <DialogContent>
+                                <DialogHeader>
+                                  <DialogTitle>Confirm deletion</DialogTitle>
+                                  <DialogDescription>
+                                    Are you sure you want to delete this entry? This action cannot be undone.
+                                  </DialogDescription>
+                                </DialogHeader>
+                                <DialogFooter>
+                                  <DialogClose asChild>
+                                    <Button variant="outline">Cancel</Button>
+                                  </DialogClose>
+                                  <DialogClose asChild>
+                                    <Button 
+                                      variant="destructive" 
+                                      onClick={() => handleDelete(entry.id)}
+                                    >
+                                      Delete
+                                    </Button>
+                                  </DialogClose>
+                                </DialogFooter>
+                              </DialogContent>
+                            </Dialog>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </TableCell>
+                    </TableRow>
+                  ))
+                )}
+              </TableBody>
+            </Table>
+          </div>
+        </ScrollArea>
+      </div>
     </div>
   );
 };
