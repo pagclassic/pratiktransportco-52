@@ -6,11 +6,12 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { fetchTransportEntries, deleteTransportEntry } from "@/services/transportService";
 import { Loader2 } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { TransportEntry } from "@/types/transport";
 
 const Index = () => {
   const queryClient = useQueryClient();
   
-  const { data: entries = [], isLoading, isError } = useQuery({
+  const { data = [], isLoading, isError } = useQuery<TransportEntry[]>({
     queryKey: ['transportEntries'],
     queryFn: fetchTransportEntries
   });
@@ -59,12 +60,12 @@ const Index = () => {
                 </TabsList>
                 <TabsContent value="entries" className="mt-0">
                   <TransportEntries 
-                    entries={entries} 
+                    entries={data} 
                     onDelete={handleDeleteEntry} 
                   />
                 </TabsContent>
                 <TabsContent value="reports" className="mt-0">
-                  <ReportsDashboard entries={entries} />
+                  <ReportsDashboard entries={data} />
                 </TabsContent>
               </Tabs>
             )}
