@@ -11,9 +11,10 @@ import { TransportEntry } from "@/types/transport";
 const Index = () => {
   const queryClient = useQueryClient();
   
-  const { data = [], isLoading, isError } = useQuery<TransportEntry[]>({
+  const { data, isLoading, isError } = useQuery({
     queryKey: ['transportEntries'],
-    queryFn: fetchTransportEntries
+    queryFn: fetchTransportEntries,
+    initialData: [] as TransportEntry[]
   });
 
   const handleDeleteEntry = async (id: string) => {
@@ -60,12 +61,12 @@ const Index = () => {
                 </TabsList>
                 <TabsContent value="entries" className="mt-0">
                   <TransportEntries 
-                    entries={data} 
+                    entries={data || []} 
                     onDelete={handleDeleteEntry} 
                   />
                 </TabsContent>
                 <TabsContent value="reports" className="mt-0">
-                  <ReportsDashboard entries={data} />
+                  <ReportsDashboard entries={data || []} />
                 </TabsContent>
               </Tabs>
             )}
