@@ -6,20 +6,23 @@ import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
 import { createTransportEntry } from "@/services/transportService";
 import { useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
 
 const DataEntryPage = () => {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   
-  const handleSubmit = async (entry: TransportEntry) => {
+  const handleSubmit = async (formData) => {
     try {
-      const newEntry = await createTransportEntry(entry);
+      const newEntry = await createTransportEntry(formData as TransportEntry);
       if (newEntry) {
         await queryClient.invalidateQueries({ queryKey: ['transportEntries'] });
+        toast.success('Entry created successfully');
         navigate('/');
       }
     } catch (error) {
       console.error('Error creating entry:', error);
+      toast.error('Failed to create entry');
     }
   };
 

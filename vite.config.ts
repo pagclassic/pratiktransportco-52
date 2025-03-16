@@ -39,12 +39,7 @@ export default defineConfig(({ mode }) => ({
   },
   plugins: [
     react({
-      jsxImportSource: 'react',
-      babel: {
-        plugins: [
-          ['@babel/plugin-transform-react-jsx', { runtime: 'automatic' }]
-        ]
-      }
+      jsxImportSource: 'react'
     }),
     mode === 'development' && componentTagger(),
   ].filter(Boolean),
@@ -54,9 +49,23 @@ export default defineConfig(({ mode }) => ({
     },
   },
   esbuild: {
-    loader: 'jsx',
+    loader: 'tsx',
     include: /src\/.*\.[tj]sx?$/,
     exclude: [],
     jsx: 'automatic',
+    jsxFactory: 'React.createElement',
+    jsxFragment: 'React.Fragment',
+    target: 'es2020',
+    tsconfigRaw: {
+      compilerOptions: {
+        jsx: 'react-jsx',
+        jsxImportSource: 'react',
+        target: 'es2020',
+        module: 'esnext',
+        moduleResolution: 'node',
+        allowJs: true,
+        strict: false,
+      }
+    }
   },
 }));

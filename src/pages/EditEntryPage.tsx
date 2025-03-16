@@ -6,33 +6,33 @@ import { Button } from "@/components/ui/button";
 import { ArrowLeft, Loader2 } from "lucide-react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { fetchTransportEntries, updateTransportEntry } from "@/services/transportService";
-
-interface RouteParams {
-  id: string;
-}
+import { toast } from "sonner";
 
 const EditEntryPage = () => {
   const navigate = useNavigate();
   const { id } = useParams();
   const queryClient = useQueryClient();
 
-  const { data = [], isLoading } = useQuery({
+  const { data: entries = [], isLoading } = useQuery({
     queryKey: ['transportEntries'],
     queryFn: fetchTransportEntries,
-    initialData: [] as TransportEntry[],
+    initialData: [],
   });
 
-  const entry = data.find(e => e.id === id);
+  const entry = entries.find(e => e.id === id);
   
-  const handleSubmit = async (updatedEntry: TransportEntry) => {
+  const handleSubmit = async (formData) => {
     try {
+      const updatedEntry = formData as TransportEntry;
       const result = await updateTransportEntry(updatedEntry);
       if (result) {
         await queryClient.invalidateQueries({ queryKey: ['transportEntries'] });
+        toast.success('Entry updated successfully');
         navigate('/');
       }
     } catch (error) {
       console.error('Error updating entry:', error);
+      toast.error('Failed to update entry');
     }
   };
 

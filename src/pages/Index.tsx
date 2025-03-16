@@ -8,12 +8,13 @@ import { Loader2 } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { TransportEntry } from "@/types/transport";
 import { useState } from "react";
+import { toast } from "sonner";
 
 const Index = () => {
   const queryClient = useQueryClient();
   const [activeTab, setActiveTab] = useState<"entries" | "reports">("entries");
   
-  const { data, isLoading, isError, error } = useQuery({
+  const { data = [], isLoading, isError, error } = useQuery<TransportEntry[], Error>({
     queryKey: ['transportEntries'],
     queryFn: fetchTransportEntries,
     initialData: [],
@@ -26,9 +27,11 @@ const Index = () => {
       const success = await deleteTransportEntry(id);
       if (success) {
         await queryClient.invalidateQueries({ queryKey: ['transportEntries'] });
+        toast.success('Entry deleted successfully');
       }
     } catch (error) {
       console.error('Error deleting entry:', error);
+      toast.error('Failed to delete entry');
     }
   };
 
@@ -63,7 +66,7 @@ const Index = () => {
               </div>
             ) : isError ? (
               <div className="text-center py-12 text-red-500">
-                <p>Error loading entries: {error?.message || 'Unknown error'}</p>
+                <p>Error loading entries: {error instanceof Error ? error.message : 'Unknown error'}</p>
                 <button 
                   onClick={() => queryClient.invalidateQueries({ queryKey: ['transportEntries'] })}
                   className="mt-4 text-sm text-primary hover:underline"
@@ -83,12 +86,12 @@ const Index = () => {
                 </TabsList>
                 <TabsContent value="entries" className="mt-0">
                   <TransportEntries 
-                    entries={data ?? []} 
+                    entries={data} 
                     onDelete={handleDeleteEntry} 
                   />
                 </TabsContent>
                 <TabsContent value="reports" className="mt-0">
-                  <ReportsDashboard entries={data ?? []} />
+                  <ReportsDashboard entries={data} />
                 </TabsContent>
               </Tabs>
             )}
