@@ -1,4 +1,3 @@
-
 import TransportForm from "@/components/TransportForm";
 import { TransportEntry } from "@/types/transport";
 import { useNavigate } from "react-router-dom";
@@ -12,7 +11,7 @@ const DataEntryPage = () => {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   
-  const handleSubmit = async (entry: TransportEntry) => {
+  const handleSubmit = async (entry) => {
     const newEntry = await createTransportEntry(entry);
     if (newEntry) {
       queryClient.invalidateQueries({ queryKey: ['transportEntries'] });
