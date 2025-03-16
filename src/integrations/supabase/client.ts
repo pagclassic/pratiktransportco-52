@@ -5,7 +5,27 @@ import type { Database } from './types';
 const SUPABASE_URL = 'https://kkvxvugnmxaremjgigrd.supabase.co';
 const SUPABASE_PUBLISHABLE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imtrdnh2dWdubXhhcmVtamdpZ3JkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDE5NzU0MjIsImV4cCI6MjA1NzU1MTQyMn0.AyrMg8XjR7_-0GwtVqkcwH-QwzL193U5CEvaorQff5I';
 
+console.log('Initializing Supabase client with URL:', SUPABASE_URL);
+
 // Import the supabase client like this:
 // import { supabase } from "@/integrations/supabase/client";
 
-export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
+export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
+  auth: {
+    persistSession: true,
+    autoRefreshToken: true,
+  }
+});
+
+// Test the connection
+supabase.from('transport_entries').select('count', { count: 'exact', head: true })
+  .then(({ count, error }) => {
+    if (error) {
+      console.error('Supabase connection test failed:', error);
+    } else {
+      console.log('Supabase connection test successful. Number of entries:', count);
+    }
+  })
+  .catch(error => {
+    console.error('Failed to connect to Supabase:', error);
+  });
