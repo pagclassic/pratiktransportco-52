@@ -16,11 +16,13 @@ export default defineConfig(({ mode }) => ({
     assetsDir: 'assets',
     sourcemap: true,
     rollupOptions: {
+      external: ['fs', 'path', 'crypto'],
       output: {
-        manualChunks: undefined,
-        entryFileNames: 'assets/[name]-[hash].js',
-        chunkFileNames: 'assets/[name]-[hash].js',
-        assetFileNames: 'assets/[name]-[hash].[ext]'
+        manualChunks: {
+          vendor: ['react', 'react-dom', 'react-router-dom', '@tanstack/react-query'],
+          form: ['react-hook-form', '@hookform/resolvers/zod', 'zod'],
+          ui: ['@radix-ui/react-dialog', '@radix-ui/react-popover', '@radix-ui/react-slot'],
+        }
       }
     },
     target: 'esnext',
@@ -33,8 +35,22 @@ export default defineConfig(({ mode }) => ({
     },
     chunkSizeWarningLimit: 1000,
   },
+  resolve: {
+    alias: {
+      "@": path.resolve(__dirname, "./src"),
+      "zod": path.resolve(__dirname, "node_modules/zod")
+    },
+  },
   optimizeDeps: {
-    include: ['jspdf', 'jspdf-autotable', 'react', 'react-dom', 'react-router-dom', '@tanstack/react-query'],
+    include: [
+      'react',
+      'react-dom',
+      'react-router-dom',
+      '@tanstack/react-query',
+      'zod',
+      '@hookform/resolvers/zod',
+      'react-hook-form'
+    ],
     exclude: ['fs', 'path', 'crypto'],
   },
   plugins: [
@@ -43,11 +59,6 @@ export default defineConfig(({ mode }) => ({
     }),
     mode === 'development' && componentTagger(),
   ].filter(Boolean),
-  resolve: {
-    alias: {
-      "@": path.resolve(__dirname, "./src"),
-    },
-  },
   esbuild: {
     loader: 'tsx',
     include: /src\/.*\.[tj]sx?$/,
