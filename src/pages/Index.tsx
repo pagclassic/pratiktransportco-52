@@ -13,10 +13,10 @@ const Index = () => {
   const queryClient = useQueryClient();
   const [activeTab, setActiveTab] = useState<"entries" | "reports">("entries");
   
-  const { data, isLoading, isError, error } = useQuery<TransportEntry[], Error>({
+  const { data, isLoading, isError, error } = useQuery({
     queryKey: ['transportEntries'],
     queryFn: fetchTransportEntries,
-    initialData: [],
+    initialData: [] as TransportEntry[],
     staleTime: 1000 * 60 * 5, // 5 minutes
     retry: 2,
   });
