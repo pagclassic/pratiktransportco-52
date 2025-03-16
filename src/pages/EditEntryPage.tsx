@@ -7,23 +7,32 @@ import { ArrowLeft, Loader2 } from "lucide-react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { fetchTransportEntries, updateTransportEntry } from "@/services/transportService";
 
+interface RouteParams {
+  id: string;
+}
+
 const EditEntryPage = () => {
   const navigate = useNavigate();
-  const { id } = useParams<{ id: string }>();
+  const { id } = useParams();
   const queryClient = useQueryClient();
 
-  const { data = [], isLoading } = useQuery<TransportEntry[]>({
+  const { data = [], isLoading } = useQuery({
     queryKey: ['transportEntries'],
-    queryFn: fetchTransportEntries
+    queryFn: fetchTransportEntries,
+    initialData: [] as TransportEntry[],
   });
 
   const entry = data.find(e => e.id === id);
   
   const handleSubmit = async (updatedEntry: TransportEntry) => {
-    const result = await updateTransportEntry(updatedEntry);
-    if (result) {
-      queryClient.invalidateQueries({ queryKey: ['transportEntries'] });
-      navigate('/');
+    try {
+      const result = await updateTransportEntry(updatedEntry);
+      if (result) {
+        await queryClient.invalidateQueries({ queryKey: ['transportEntries'] });
+        navigate('/');
+      }
+    } catch (error) {
+      console.error('Error updating entry:', error);
     }
   };
 
