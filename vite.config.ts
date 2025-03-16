@@ -41,16 +41,17 @@ export default defineConfig(({ mode }) => ({
     commonjsOptions: {
       include: [/node_modules/],
       transformMixedEsModules: true,
-      requireReturnsDefault: 'auto'
-    },
-    chunkSizeWarningLimit: 1000,
+      requireReturnsDefault: 'auto',
+      esmExternals: true
+    }
   },
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src")
     },
     dedupe: ['zod', 'react', 'react-dom', 'react-hook-form'],
-    mainFields: ['module', 'main', 'browser']
+    mainFields: ['module', 'jsnext:main', 'jsnext', 'main'],
+    extensions: ['.mjs', '.js', '.ts', '.jsx', '.tsx', '.json']
   },
   optimizeDeps: {
     include: [
@@ -68,6 +69,12 @@ export default defineConfig(({ mode }) => ({
       platform: 'browser',
       supported: {
         'top-level-await': true
+      },
+      mainFields: ['module', 'main'],
+      resolveExtensions: ['.mjs', '.js', '.ts', '.jsx', '.tsx', '.json'],
+      format: 'esm',
+      loader: {
+        '.js': 'jsx'
       }
     }
   },
@@ -127,6 +134,7 @@ export default defineConfig(({ mode }) => ({
     jsxFragment: 'React.Fragment',
     target: 'esnext',
     platform: 'browser',
+    format: 'esm',
     tsconfigRaw: {
       compilerOptions: {
         jsx: 'react-jsx',
@@ -138,5 +146,5 @@ export default defineConfig(({ mode }) => ({
         strict: false,
       }
     }
-  },
+  }
 }));
