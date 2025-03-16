@@ -9,6 +9,7 @@ export default defineConfig(({ mode }) => ({
   server: {
     host: "::",
     port: 8080,
+    open: true,
   },
   build: {
     outDir: 'dist',
@@ -30,15 +31,22 @@ export default defineConfig(({ mode }) => ({
       include: [/node_modules/],
       transformMixedEsModules: true,
     },
+    chunkSizeWarningLimit: 1000,
   },
   optimizeDeps: {
-    include: ['jspdf', 'jspdf-autotable'],
+    include: ['jspdf', 'jspdf-autotable', 'react', 'react-dom', 'react-router-dom', '@tanstack/react-query'],
     exclude: ['fs', 'path', 'crypto'],
   },
   plugins: [
-    react(),
-    mode === 'development' &&
-    componentTagger(),
+    react({
+      jsxImportSource: 'react',
+      babel: {
+        plugins: [
+          ['@babel/plugin-transform-react-jsx', { runtime: 'automatic' }]
+        ]
+      }
+    }),
+    mode === 'development' && componentTagger(),
   ].filter(Boolean),
   resolve: {
     alias: {
@@ -49,5 +57,6 @@ export default defineConfig(({ mode }) => ({
     loader: 'jsx',
     include: /src\/.*\.[tj]sx?$/,
     exclude: [],
+    jsx: 'automatic',
   },
 }));

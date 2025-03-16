@@ -16,7 +16,7 @@ const Index = () => {
   const { data, isLoading, isError, error } = useQuery({
     queryKey: ['transportEntries'],
     queryFn: fetchTransportEntries,
-    initialData: [] as TransportEntry[],
+    initialData: [],
     staleTime: 1000 * 60 * 5, // 5 minutes
     retry: 2,
   });

@@ -11,11 +11,15 @@ const DataEntryPage = () => {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   
-  const handleSubmit = async (entry) => {
-    const newEntry = await createTransportEntry(entry);
-    if (newEntry) {
-      queryClient.invalidateQueries({ queryKey: ['transportEntries'] });
-      navigate('/');
+  const handleSubmit = async (entry: TransportEntry) => {
+    try {
+      const newEntry = await createTransportEntry(entry);
+      if (newEntry) {
+        await queryClient.invalidateQueries({ queryKey: ['transportEntries'] });
+        navigate('/');
+      }
+    } catch (error) {
+      console.error('Error creating entry:', error);
     }
   };
 
