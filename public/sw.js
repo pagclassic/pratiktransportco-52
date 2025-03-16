@@ -3,16 +3,17 @@ const urlsToCache = [
   '/',
   '/index.html',
   '/manifest.json',
-  '/icons/icon-192x192.jpeg',
-  '/icons/icon-512x512.jpeg'
+  '/assets/index.css',
+  '/assets/index.js',
+  '/assets/vendor.js',
+  '/assets/form.js',
+  '/assets/ui.js'
 ];
 
 self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME)
-      .then((cache) => {
-        return cache.addAll(urlsToCache);
-      })
+      .then((cache) => cache.addAll(urlsToCache))
   );
 });
 
@@ -36,5 +37,19 @@ self.addEventListener('fetch', (event) => {
             return response;
           });
       })
+  );
+});
+
+self.addEventListener('activate', (event) => {
+  event.waitUntil(
+    caches.keys().then((cacheNames) => {
+      return Promise.all(
+        cacheNames.map((cacheName) => {
+          if (cacheName !== CACHE_NAME) {
+            return caches.delete(cacheName);
+          }
+        })
+      );
+    })
   );
 }); 
