@@ -1,4 +1,3 @@
-
 import TransportForm from "@/components/TransportForm";
 import { TransportEntry } from "@/types/transport";
 import { useNavigate, useParams } from "react-router-dom";
@@ -13,12 +12,12 @@ const EditEntryPage = () => {
   const { id } = useParams<{ id: string }>();
   const queryClient = useQueryClient();
 
-  const { data: entries = [], isLoading } = useQuery({
+  const { data = [], isLoading } = useQuery<TransportEntry[]>({
     queryKey: ['transportEntries'],
     queryFn: fetchTransportEntries
   });
 
-  const entry = entries.find(e => e.id === id);
+  const entry = data.find(e => e.id === id);
   
   const handleSubmit = async (updatedEntry: TransportEntry) => {
     const result = await updateTransportEntry(updatedEntry);
