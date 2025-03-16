@@ -9,6 +9,24 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="default" />
     <meta name="apple-mobile-web-app-title" content="Transport Portal" />
     <title>Transport Portal</title>
+    <script>
+      // Polyfills for Node.js modules
+      window.global = window;
+      if (typeof Buffer === 'undefined') {
+        window.Buffer = {
+          from: function(str) { return str; },
+          alloc: function(size) { return new Array(size).fill(0); }
+        };
+      }
+      if (typeof process === 'undefined') {
+        window.process = {
+          env: {},
+          versions: {},
+          platform: 'browser',
+          arch: 'browser'
+        };
+      }
+    </script>
   </head>
 
   <body>

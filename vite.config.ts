@@ -31,6 +31,14 @@ export default defineConfig(({ mode }) => ({
         comments: false,
       },
     },
+    commonjsOptions: {
+      include: [/node_modules/],
+      transformMixedEsModules: true,
+    },
+  },
+  optimizeDeps: {
+    include: ['jspdf', 'jspdf-autotable'],
+    exclude: ['fs', 'path', 'crypto'],
   },
   plugins: [
     react(),
