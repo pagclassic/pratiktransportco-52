@@ -18,10 +18,18 @@ export default defineConfig(({ mode }) => ({
     rollupOptions: {
       external: ['fs', 'path', 'crypto'],
       output: {
-        manualChunks: {
-          vendor: ['react', 'react-dom', 'react-router-dom', '@tanstack/react-query'],
-          form: ['react-hook-form', '@hookform/resolvers/zod', 'zod'],
-          ui: ['@radix-ui/react-dialog', '@radix-ui/react-popover', '@radix-ui/react-slot'],
+        manualChunks(id) {
+          if (id.includes('node_modules')) {
+            if (id.includes('react') || id.includes('react-dom') || id.includes('react-router-dom') || id.includes('@tanstack/react-query')) {
+              return 'vendor';
+            }
+            if (id.includes('zod') || id.includes('@hookform') || id.includes('react-hook-form')) {
+              return 'form';
+            }
+            if (id.includes('@radix-ui')) {
+              return 'ui';
+            }
+          }
         }
       }
     },
@@ -32,14 +40,16 @@ export default defineConfig(({ mode }) => ({
     commonjsOptions: {
       include: [/node_modules/],
       transformMixedEsModules: true,
+      requireReturnsDefault: 'auto'
     },
     chunkSizeWarningLimit: 1000,
   },
   resolve: {
     alias: {
-      "@": path.resolve(__dirname, "./src"),
-      "zod": path.resolve(__dirname, "node_modules/zod")
+      "@": path.resolve(__dirname, "./src")
     },
+    dedupe: ['zod', 'react', 'react-dom', 'react-hook-form'],
+    mainFields: ['module', 'main', 'browser']
   },
   optimizeDeps: {
     include: [
@@ -52,6 +62,13 @@ export default defineConfig(({ mode }) => ({
       'react-hook-form'
     ],
     exclude: ['fs', 'path', 'crypto'],
+    esbuildOptions: {
+      target: 'esnext',
+      platform: 'browser',
+      supported: {
+        'top-level-await': true
+      }
+    }
   },
   plugins: [
     react({
@@ -66,7 +83,8 @@ export default defineConfig(({ mode }) => ({
     jsx: 'automatic',
     jsxFactory: 'React.createElement',
     jsxFragment: 'React.Fragment',
-    target: 'es2020',
+    target: 'esnext',
+    platform: 'browser',
     tsconfigRaw: {
       compilerOptions: {
         jsx: 'react-jsx',
