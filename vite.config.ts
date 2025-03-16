@@ -25,12 +25,7 @@ export default defineConfig(({ mode }) => ({
     target: 'esnext',
     modulePreload: true,
     cssCodeSplit: true,
-    minify: 'terser',
-    terserOptions: {
-      format: {
-        comments: false,
-      },
-    },
+    minify: 'esbuild',
     commonjsOptions: {
       include: [/node_modules/],
       transformMixedEsModules: true,
