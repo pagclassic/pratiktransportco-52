@@ -7,21 +7,33 @@ import { fetchTransportEntries, deleteTransportEntry } from "@/services/transpor
 import { Loader2 } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { TransportEntry } from "@/types/transport";
+import { useState } from "react";
 
 const Index = () => {
   const queryClient = useQueryClient();
+  const [activeTab, setActiveTab] = useState<"entries" | "reports">("entries");
   
-  const { data, isLoading, isError } = useQuery({
+  const { data, isLoading, isError, error } = useQuery<TransportEntry[], Error>({
     queryKey: ['transportEntries'],
     queryFn: fetchTransportEntries,
-    initialData: [] as TransportEntry[]
+    initialData: [],
+    staleTime: 1000 * 60 * 5, // 5 minutes
+    retry: 2,
   });
 
   const handleDeleteEntry = async (id: string) => {
-    const success = await deleteTransportEntry(id);
-    if (success) {
-      queryClient.invalidateQueries({ queryKey: ['transportEntries'] });
+    try {
+      const success = await deleteTransportEntry(id);
+      if (success) {
+        await queryClient.invalidateQueries({ queryKey: ['transportEntries'] });
+      }
+    } catch (error) {
+      console.error('Error deleting entry:', error);
     }
+  };
+
+  const handleTabChange = (value: string) => {
+    setActiveTab(value as "entries" | "reports");
   };
 
   return (
@@ -51,22 +63,32 @@ const Index = () => {
               </div>
             ) : isError ? (
               <div className="text-center py-12 text-red-500">
-                Error loading entries. Please refresh the page.
+                <p>Error loading entries: {error?.message || 'Unknown error'}</p>
+                <button 
+                  onClick={() => queryClient.invalidateQueries({ queryKey: ['transportEntries'] })}
+                  className="mt-4 text-sm text-primary hover:underline"
+                >
+                  Try again
+                </button>
               </div>
             ) : (
-              <Tabs defaultValue="entries" className="space-y-4">
+              <Tabs 
+                value={activeTab} 
+                onValueChange={handleTabChange}
+                className="space-y-4"
+              >
                 <TabsList className="grid w-full grid-cols-2 bg-white shadow-sm mb-4">
                   <TabsTrigger value="entries" className="text-base py-3">Transport Entries</TabsTrigger>
                   <TabsTrigger value="reports" className="text-base py-3">Reports & Analytics</TabsTrigger>
                 </TabsList>
                 <TabsContent value="entries" className="mt-0">
                   <TransportEntries 
-                    entries={data || []} 
+                    entries={data ?? []} 
                     onDelete={handleDeleteEntry} 
                   />
                 </TabsContent>
                 <TabsContent value="reports" className="mt-0">
-                  <ReportsDashboard entries={data || []} />
+                  <ReportsDashboard entries={data ?? []} />
                 </TabsContent>
               </Tabs>
             )}
