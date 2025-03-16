@@ -1,6 +1,6 @@
 import { supabase } from "@/integrations/supabase/client";
 import { TransportEntry } from "@/types/transport";
-import { toast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 
 // Transform date objects for Supabase (Date objects to ISO strings)
 const prepareEntryForDb = (entry: TransportEntry) => {
@@ -53,104 +53,88 @@ const transformDbEntry = (entry: any): TransportEntry => {
 
 export const fetchTransportEntries = async (): Promise<TransportEntry[]> => {
   try {
-    console.log('Attempting to fetch transport entries from Supabase...');
+    console.log('Fetching transport entries...');
     const { data, error } = await supabase
       .from('transport_entries')
       .select('*')
       .order('date', { ascending: false });
-    
+
     if (error) {
-      console.error('Supabase error:', error);
-      console.error('Error details:', {
-        message: error.message,
-        code: error.code,
-        details: error.details,
-        hint: error.hint
-      });
-      throw error;
+      console.error('Error fetching entries:', error.message);
+      toast.error('Failed to load entries');
+      return [];
     }
-    
-    console.log('Successfully fetched entries:', data?.length || 0);
-    return data.map(transformDbEntry);
+
+    return data.map(entry => ({
+      id: entry.id,
+      date: new Date(entry.date),
+      vehicleNumber: entry.vehicle_number,
+      driverName: entry.driver_name || "",
+      driverMobile: entry.driver_mobile || "",
+      place: entry.place || "",
+      transportName: entry.transport_name || "",
+      rentAmount: Number(entry.rent_amount),
+      advanceAmount: entry.advance_amount ? Number(entry.advance_amount) : null,
+      advanceDate: entry.advance_date ? new Date(entry.advance_date) : null,
+      advanceType: entry.advance_type || "Cash",
+      balanceStatus: entry.balance_status,
+      balanceDate: entry.balance_date ? new Date(entry.balance_date) : null,
+    }));
   } catch (error) {
-    console.error('Error fetching transport entries:', error);
-    console.error('Full error object:', JSON.stringify(error, null, 2));
-    toast({
-      title: "Error fetching entries",
-      description: error.message || "There was a problem loading your data. Please try again.",
-      variant: "destructive",
-    });
+    console.error('Failed to fetch entries:', error);
+    toast.error('Failed to load entries');
     return [];
   }
 };
 
 export const createTransportEntry = async (entry: TransportEntry): Promise<TransportEntry | null> => {
   try {
-    console.log('Attempting to create transport entry...');
-    // Remove id property when creating a new entry
-    const { id, ...entryWithoutId } = entry;
-    const preparedEntry = prepareEntryForDb(entryWithoutId as TransportEntry);
-    
-    console.log('Entry to create:', entry);
-    console.log('Prepared entry for DB:', preparedEntry);
+    const { id, ...entryData } = entry;
+    const preparedEntry = prepareEntryForDb(entryData as TransportEntry);
     
     const { data, error } = await supabase
       .from('transport_entries')
       .insert(preparedEntry)
       .select()
       .single();
-    
+
     if (error) {
-      console.error('Supabase error details:', {
-        message: error.message,
-        code: error.code,
-        details: error.details,
-        hint: error.hint
-      });
-      throw error;
+      console.error('Error creating entry:', error.message);
+      toast.error('Failed to create entry');
+      return null;
     }
-    
-    console.log('Successfully created entry:', data);
-    return transformDbEntry(data);
+
+    toast.success('Entry created successfully');
+    return data;
   } catch (error) {
-    console.error('Error creating transport entry:', error);
-    console.error('Full error object:', JSON.stringify(error, null, 2));
-    toast({
-      title: "Error creating entry",
-      description: error.message || "There was a problem saving your data. Please try again.",
-      variant: "destructive",
-    });
+    console.error('Failed to create entry:', error);
+    toast.error('Failed to create entry');
     return null;
   }
 };
 
-export const updateTransportEntry = async (entry: TransportEntry): Promise<TransportEntry | null> => {
+export const updateTransportEntry = async (entry: TransportEntry): Promise<boolean> => {
   try {
     const preparedEntry = prepareEntryForDb(entry);
-    
-    // Remove id from the update data, as it's used in the where clause
     const { id, ...updateData } = preparedEntry;
-    
-    const { data, error } = await supabase
+
+    const { error } = await supabase
       .from('transport_entries')
       .update(updateData)
-      .eq('id', entry.id)
-      .select()
-      .single();
-    
+      .eq('id', entry.id);
+
     if (error) {
-      throw error;
+      console.error('Error updating entry:', error.message);
+      toast.error('Failed to update entry');
+      return false;
     }
-    
-    return transformDbEntry(data);
+
+    toast.success('Entry updated successfully');
+    return true;
   } catch (error) {
-    console.error('Error updating transport entry:', error);
-    toast({
-      title: "Error updating entry",
-      description: "There was a problem updating your data. Please try again.",
-      variant: "destructive",
-    });
-    return null;
+    console.error('Failed to update entry:', error);
+    toast.error('Failed to update entry');
+    return false;
   }
 };
 
@@ -160,19 +144,18 @@ export const deleteTransportEntry = async (id: string): Promise<boolean> => {
       .from('transport_entries')
       .delete()
       .eq('id', id);
-    
+
     if (error) {
-      throw error;
+      console.error('Error deleting entry:', error.message);
+      toast.error('Failed to delete entry');
+      return false;
     }
-    
+
+    toast.success('Entry deleted successfully');
     return true;
   } catch (error) {
-    console.error('Error deleting transport entry:', error);
-    toast({
-      title: "Error deleting entry",
-      description: "There was a problem deleting your data. Please try again.",
-      variant: "destructive",
-    });
+    console.error('Failed to delete entry:', error);
+    toast.error('Failed to delete entry');
     return false;
   }
 };
