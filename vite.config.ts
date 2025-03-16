@@ -19,18 +19,10 @@ export default defineConfig(({ mode }) => ({
     rollupOptions: {
       external: ['fs', 'path', 'crypto'],
       output: {
-        manualChunks(id) {
-          if (id.includes('node_modules')) {
-            if (id.includes('react') || id.includes('react-dom') || id.includes('react-router-dom') || id.includes('@tanstack/react-query')) {
-              return 'vendor';
-            }
-            if (id.includes('zod') || id.includes('@hookform') || id.includes('react-hook-form')) {
-              return 'form';
-            }
-            if (id.includes('@radix-ui')) {
-              return 'ui';
-            }
-          }
+        manualChunks: {
+          'vendor': ['react', 'react-dom', 'react-router-dom', '@tanstack/react-query'],
+          'form': ['zod', '@hookform/resolvers/zod', 'react-hook-form'],
+          'ui': ['@radix-ui/react-dialog', '@radix-ui/react-popover', '@radix-ui/react-slot']
         }
       }
     },
@@ -42,7 +34,7 @@ export default defineConfig(({ mode }) => ({
       include: [/node_modules/],
       transformMixedEsModules: true,
       requireReturnsDefault: 'auto',
-      esmExternals: true
+      esmExternals: ['zod']
     }
   },
   resolve: {
@@ -124,27 +116,5 @@ export default defineConfig(({ mode }) => ({
         ]
       }
     })
-  ].filter(Boolean),
-  esbuild: {
-    loader: 'tsx',
-    include: /src\/.*\.[tj]sx?$/,
-    exclude: [],
-    jsx: 'automatic',
-    jsxFactory: 'React.createElement',
-    jsxFragment: 'React.Fragment',
-    target: 'esnext',
-    platform: 'browser',
-    format: 'esm',
-    tsconfigRaw: {
-      compilerOptions: {
-        jsx: 'react-jsx',
-        jsxImportSource: 'react',
-        target: 'es2020',
-        module: 'esnext',
-        moduleResolution: 'node',
-        allowJs: true,
-        strict: false,
-      }
-    }
-  }
+  ].filter(Boolean)
 }));
