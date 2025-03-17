@@ -1,3 +1,4 @@
+
 import { supabase } from "@/integrations/supabase/client";
 import { TransportEntry } from "@/types/transport";
 import { toast } from "sonner";
@@ -99,7 +100,7 @@ export const createTransportEntry = async (entry: TransportEntry): Promise<Trans
     }
 
     toast.success('Entry created successfully');
-    return data;
+    return transformDbEntry(data);
   } catch (error) {
     console.error('Failed to create entry:', error);
     toast.error('Failed to create entry');
