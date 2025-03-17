@@ -3,6 +3,10 @@ import react from "@vitejs/plugin-react-swc";
 import path from "path";
 import { componentTagger } from "lovable-tagger";
 import { VitePWA } from 'vite-plugin-pwa';
+import { fileURLToPath } from "url";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => ({
@@ -20,9 +24,27 @@ export default defineConfig(({ mode }) => ({
       external: ['fs', 'path', 'crypto', 'stream', 'http', 'https', 'url', 'zlib'],
       output: {
         manualChunks: {
-          'vendor': ['react', 'react-dom', 'react-router-dom', '@tanstack/react-query'],
-          'form': ['zod', '@hookform/resolvers/zod', 'react-hook-form'],
-          'ui': ['@radix-ui/react-dialog', '@radix-ui/react-popover', '@radix-ui/react-slot']
+          vendor: [
+            "react",
+            "react-dom",
+            "react-router-dom",
+            "@tanstack/react-query"
+          ],
+          form: ["react-hook-form"],
+          ui: [
+            "@radix-ui/react-dialog",
+            "@radix-ui/react-popover",
+            "@radix-ui/react-slot",
+            "@radix-ui/react-select",
+            "class-variance-authority",
+            "clsx",
+            "tailwind-merge",
+            "lucide-react"
+          ],
+          utils: [
+            "date-fns"
+          ],
+          pdf: ["jspdf", "jspdf-autotable"]
         }
       }
     },
@@ -33,8 +55,8 @@ export default defineConfig(({ mode }) => ({
     commonjsOptions: {
       include: [/node_modules/],
       transformMixedEsModules: true,
-      requireReturnsDefault: 'auto',
-      esmExternals: true
+      requireReturnsDefault: true,
+      esmExternals: false
     }
   },
   resolve: {
@@ -44,9 +66,25 @@ export default defineConfig(({ mode }) => ({
       "http": "stream-http",
       "https": "https-browserify",
       "url": "url",
-      "zlib": "browserify-zlib"
+      "zlib": "browserify-zlib",
+      "crypto": "crypto-browserify",
+      "buffer": "buffer",
+      "util": "util",
+      "path": "path-browserify",
+      "fs": "fs",
+      "process": "process/browser",
+      "events": "events",
+      "assert": "assert",
+      "querystring": "querystring-es3",
+      "punycode": "punycode",
+      "os": "os-browserify/browser",
+      "constants": "constants-browserify",
+      "timers": "timers-browserify",
+      "tty": "tty-browserify",
+      "vm": "vm-browserify",
+      "domain": "domain-browser"
     },
-    dedupe: ['zod', 'react', 'react-dom', 'react-hook-form'],
+    dedupe: ['react', 'react-dom', 'react-hook-form'],
     mainFields: ['module', 'jsnext:main', 'jsnext', 'main'],
     extensions: ['.mjs', '.js', '.ts', '.jsx', '.tsx', '.json']
   },
@@ -56,9 +94,26 @@ export default defineConfig(({ mode }) => ({
       'react-dom',
       'react-router-dom',
       '@tanstack/react-query',
-      'zod',
-      '@hookform/resolvers/zod',
-      'react-hook-form'
+      'react-hook-form',
+      'process',
+      'events',
+      'assert',
+      'querystring-es3',
+      'punycode',
+      'os-browserify',
+      'constants-browserify',
+      'timers-browserify',
+      'tty-browserify',
+      'vm-browserify',
+      'domain-browser',
+      'buffer',
+      '@radix-ui/react-select',
+      '@radix-ui/react-slot',
+      'class-variance-authority',
+      'clsx',
+      'tailwind-merge',
+      'lucide-react',
+      'date-fns'
     ],
     exclude: ['fs', 'path', 'crypto', 'stream', 'http', 'https', 'url', 'zlib'],
     esbuildOptions: {
@@ -72,7 +127,10 @@ export default defineConfig(({ mode }) => ({
       format: 'esm',
       loader: {
         '.js': 'jsx'
-      }
+      },
+      define: {
+        global: "globalThis",
+      },
     }
   },
   plugins: [
@@ -121,5 +179,13 @@ export default defineConfig(({ mode }) => ({
         ]
       }
     })
-  ].filter(Boolean)
+  ].filter(Boolean),
+  define: {
+    'process.env': {},
+    global: {},
+    'process.version': '"v16.0.0"',
+    'process.platform': '"browser"',
+    'process.browser': true,
+    'process.env.NODE_ENV': JSON.stringify(mode),
+  },
 }));

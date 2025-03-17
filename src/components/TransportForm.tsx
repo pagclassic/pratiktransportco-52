@@ -1,8 +1,6 @@
 import { useState, useEffect } from "react";
 import { format } from "date-fns";
-import * as z from "zod";
 import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
 import { CalendarIcon, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { v4 as uuidv4 } from "uuid";
@@ -34,21 +32,20 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 
-// Make sure the schema matches the TransportEntry type
-const formSchema = z.object({
-  date: z.date({ required_error: "Date is required" }),
-  vehicleNumber: z.string().min(3, { message: "Vehicle number is required" }),
-  driverName: z.string().default(""),
-  driverMobile: z.string().default(""),
-  place: z.string().default(""),
-  transportName: z.string().default(""),
-  rentAmount: z.coerce.number().min(1, { message: "Rent amount is required" }),
-  advanceAmount: z.coerce.number().nullable().default(null),
-  advanceDate: z.date().nullable().default(null),
-  advanceType: z.enum(["Cash", "Bank Transfer", "Check", "UPI"]).default("Cash"),
-  balanceStatus: z.enum(["PAID", "UNPAID", "PARTIAL"]).default("UNPAID"),
-  balanceDate: z.date().nullable().default(null),
-});
+type FormValues = {
+  date: Date | undefined;
+  vehicleNumber: string;
+  driverName: string;
+  driverMobile: string;
+  place: string;
+  transportName: string;
+  rentAmount: number;
+  advanceAmount: number | null;
+  advanceDate: Date | null;
+  advanceType: "Cash" | "Bank Transfer" | "Check" | "UPI";
+  balanceStatus: "PAID" | "UNPAID" | "PARTIAL";
+  balanceDate: Date | null;
+};
 
 export interface TransportFormProps {
   onSubmit: (data: TransportEntry) => void;
@@ -60,10 +57,9 @@ const TransportForm = ({ onSubmit, initialData, isEditing = false }: TransportFo
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
 
-  const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
+  const form = useForm<FormValues>({
     defaultValues: {
-      date: undefined, // Changed from new Date() to undefined
+      date: undefined,
       vehicleNumber: "",
       driverName: "",
       driverMobile: "",
@@ -76,6 +72,7 @@ const TransportForm = ({ onSubmit, initialData, isEditing = false }: TransportFo
       balanceStatus: "UNPAID",
       balanceDate: null,
     },
+    mode: "onChange",
   });
 
   // Set form values based on initialData when editing
@@ -98,10 +95,24 @@ const TransportForm = ({ onSubmit, initialData, isEditing = false }: TransportFo
     }
   }, [initialData, isEditing, form]);
 
-  const handleSubmit = async (values: z.infer<typeof formSchema>) => {
+  const handleSubmit = async (values: FormValues) => {
     setIsSubmitting(true);
     
     try {
+      // Validate required fields
+      if (!values.date) {
+        form.setError("date", { message: "Date is required" });
+        return;
+      }
+      if (!values.vehicleNumber || values.vehicleNumber.length < 3) {
+        form.setError("vehicleNumber", { message: "Vehicle number is required and must be at least 3 characters" });
+        return;
+      }
+      if (!values.rentAmount || values.rentAmount < 1) {
+        form.setError("rentAmount", { message: "Rent amount is required and must be greater than 0" });
+        return;
+      }
+
       // Simulate API call
       await new Promise((resolve) => setTimeout(resolve, 500));
       
@@ -133,7 +144,7 @@ const TransportForm = ({ onSubmit, initialData, isEditing = false }: TransportFo
       
       if (!isEditing) {
         form.reset({
-          date: undefined, // Changed from new Date() to undefined
+          date: undefined,
           vehicleNumber: "",
           driverName: "",
           driverMobile: "",

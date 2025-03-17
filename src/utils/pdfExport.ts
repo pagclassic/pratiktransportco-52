@@ -1,7 +1,14 @@
 import { TransportEntry } from "@/types/transport";
 import { format } from "date-fns";
 import jsPDF from "jspdf";
-import "jspdf-autotable";
+import 'jspdf-autotable';
+
+// Extend jsPDF type to include autoTable
+declare module 'jspdf' {
+  interface jsPDF {
+    autoTable: (options: any) => void;
+  }
+}
 
 export const exportToPDF = (entries: TransportEntry[], startDate: Date, endDate: Date) => {
   const doc = new jsPDF();
