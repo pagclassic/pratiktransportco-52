@@ -99,8 +99,15 @@ export default defineConfig(({ mode }) => ({
       'browserify-fs',
       'events',
       'assert',
-      'path-browserify'
+      'path-browserify',
+      'yocto-queue',
+      'p-limit',
+      'p-locate',
+      'locate-path',
+      'find-up',
+      'pkg-dir'
     ],
+    exclude: [],
     esbuildOptions: {
       define: {
         global: 'globalThis'
