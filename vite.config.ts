@@ -17,7 +17,7 @@ export default defineConfig(({ mode }) => ({
     assetsDir: 'assets',
     sourcemap: true,
     rollupOptions: {
-      external: ['fs', 'path', 'crypto'],
+      external: ['fs', 'path', 'crypto', 'stream', 'http', 'https', 'url', 'zlib'],
       output: {
         manualChunks: {
           'vendor': ['react', 'react-dom', 'react-router-dom', '@tanstack/react-query'],
@@ -34,12 +34,18 @@ export default defineConfig(({ mode }) => ({
       include: [/node_modules/],
       transformMixedEsModules: true,
       requireReturnsDefault: 'auto',
-      esmExternals: ['zod']
+      esmExternals: true
     }
   },
   resolve: {
     alias: {
-      "@": path.resolve(__dirname, "./src")
+      "@": path.resolve(__dirname, "./src"),
+      "zod": path.resolve(__dirname, "node_modules/zod"),
+      "stream": "stream-browserify",
+      "http": "stream-http",
+      "https": "https-browserify",
+      "url": "url",
+      "zlib": "browserify-zlib"
     },
     dedupe: ['zod', 'react', 'react-dom', 'react-hook-form'],
     mainFields: ['module', 'jsnext:main', 'jsnext', 'main'],
@@ -55,7 +61,7 @@ export default defineConfig(({ mode }) => ({
       '@hookform/resolvers/zod',
       'react-hook-form'
     ],
-    exclude: ['fs', 'path', 'crypto'],
+    exclude: ['fs', 'path', 'crypto', 'stream', 'http', 'https', 'url', 'zlib'],
     esbuildOptions: {
       target: 'esnext',
       platform: 'browser',
