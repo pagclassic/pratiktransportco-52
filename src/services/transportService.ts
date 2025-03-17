@@ -53,7 +53,8 @@ const transformDbEntry = (entry: any): TransportEntry => {
 
 export const fetchTransportEntries = async (): Promise<TransportEntry[]> => {
   try {
-    console.log('Fetching transport entries...');
+    console.log('Fetching transport entries from Supabase...');
+    
     const { data, error } = await supabase
       .from('transport_entries')
       .select('*')
@@ -62,24 +63,17 @@ export const fetchTransportEntries = async (): Promise<TransportEntry[]> => {
     if (error) {
       console.error('Error fetching entries:', error.message);
       toast.error('Failed to load entries');
+      throw error;
+    }
+
+    if (!data || data.length === 0) {
+      console.log('No entries found in database');
       return [];
     }
 
-    return data.map(entry => ({
-      id: entry.id,
-      date: new Date(entry.date),
-      vehicleNumber: entry.vehicle_number,
-      driverName: entry.driver_name || "",
-      driverMobile: entry.driver_mobile || "",
-      place: entry.place || "",
-      transportName: entry.transport_name || "",
-      rentAmount: Number(entry.rent_amount),
-      advanceAmount: entry.advance_amount ? Number(entry.advance_amount) : null,
-      advanceDate: entry.advance_date ? new Date(entry.advance_date) : null,
-      advanceType: entry.advance_type || "Cash",
-      balanceStatus: entry.balance_status,
-      balanceDate: entry.balance_date ? new Date(entry.balance_date) : null,
-    }));
+    console.log(`Successfully fetched ${data.length} entries`);
+    
+    return data.map(entry => transformDbEntry(entry));
   } catch (error) {
     console.error('Failed to fetch entries:', error);
     toast.error('Failed to load entries');

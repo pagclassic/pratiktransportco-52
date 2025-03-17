@@ -1,3 +1,5 @@
+
+import React, { useEffect } from "react";
 import TransportEntries from "@/components/TransportEntries";
 import ReportsDashboard from "@/components/ReportsDashboard";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -14,13 +16,19 @@ const Index = () => {
   const queryClient = useQueryClient();
   const [activeTab, setActiveTab] = useState<"entries" | "reports">("entries");
   
-  const { data = [], isLoading, isError, error } = useQuery<TransportEntry[], Error>({
+  const { data = [], isLoading, isError, error, refetch } = useQuery<TransportEntry[], Error>({
     queryKey: ['transportEntries'],
     queryFn: fetchTransportEntries,
     initialData: [],
-    staleTime: 1000 * 60 * 5, // 5 minutes
-    retry: 2,
+    staleTime: 1000 * 60, // 1 minute (reduced from 5 minutes for more frequent updates)
+    retry: 3,
   });
+
+  // Force refetch on component mount
+  useEffect(() => {
+    console.log("Index component mounted, refetching data...");
+    refetch();
+  }, [refetch]);
 
   const handleDeleteEntry = async (id: string) => {
     try {
@@ -68,7 +76,7 @@ const Index = () => {
               <div className="text-center py-12 text-red-500">
                 <p>Error loading entries: {error instanceof Error ? error.message : 'Unknown error'}</p>
                 <button 
-                  onClick={() => queryClient.invalidateQueries({ queryKey: ['transportEntries'] })}
+                  onClick={() => refetch()}
                   className="mt-4 text-sm text-primary hover:underline"
                 >
                   Try again
