@@ -5,6 +5,7 @@ import { componentTagger } from "lovable-tagger";
 import { VitePWA } from 'vite-plugin-pwa';
 import { fileURLToPath } from "url";
 import { nodePolyfills } from 'vite-plugin-node-polyfills';
+import nodePolyfills2 from 'rollup-plugin-polyfill-node';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -22,6 +23,9 @@ export default defineConfig(({ mode }) => ({
     assetsDir: 'assets',
     sourcemap: true,
     rollupOptions: {
+      plugins: [
+        nodePolyfills2()
+      ],
       external: ['fs', 'path', 'crypto', 'stream', 'http', 'https', 'url', 'zlib'],
       output: {
         manualChunks: {
@@ -86,6 +90,13 @@ export default defineConfig(({ mode }) => ({
     }
   },
   optimizeDeps: {
+    include: [
+      'stream-browserify',
+      'buffer',
+      'process/browser',
+      'util',
+      'browserify-fs'
+    ],
     esbuildOptions: {
       define: {
         global: 'globalThis'
@@ -108,11 +119,15 @@ export default defineConfig(({ mode }) => ({
     }),
     mode === 'development' && componentTagger(),
     nodePolyfills({
-      include: ['stream', 'util', 'buffer', 'process'],
+      include: ['stream', 'util', 'buffer', 'process', 'fs'],
       globals: {
         Buffer: true,
         global: true,
         process: true
+      },
+      overrides: {
+        stream: 'stream-browserify',
+        fs: 'browserify-fs'
       }
     }),
     VitePWA({
