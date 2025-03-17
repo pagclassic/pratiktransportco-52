@@ -1,27 +1,26 @@
+
 export function registerServiceWorker() {
   if ('serviceWorker' in navigator) {
-    window.addEventListener('load', () => {
-      navigator.serviceWorker
-        .register('/sw.js')
-        .then((registration) => {
-          console.log('ServiceWorker registration successful:', registration.scope);
-          
-          // Check for updates
-          registration.addEventListener('updatefound', () => {
-            const newWorker = registration.installing;
-            if (newWorker) {
-              newWorker.addEventListener('statechange', () => {
-                if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-                  // New content is available, show notification to user
-                  showUpdateNotification();
-                }
-              });
-            }
-          });
-        })
-        .catch((error) => {
-          console.error('ServiceWorker registration failed:', error);
+    window.addEventListener('load', async () => {
+      try {
+        const registration = await navigator.serviceWorker.register('/sw.js');
+        console.log('ServiceWorker registration successful:', registration.scope);
+        
+        // Check for updates
+        registration.addEventListener('updatefound', () => {
+          const newWorker = registration.installing;
+          if (newWorker) {
+            newWorker.addEventListener('statechange', () => {
+              if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                // New content is available, show notification to user
+                showUpdateNotification();
+              }
+            });
+          }
         });
+      } catch (error) {
+        console.error('ServiceWorker registration failed:', error);
+      }
         
       // Handle updates when the user returns to the app
       navigator.serviceWorker.addEventListener('controllerchange', () => {
@@ -30,6 +29,8 @@ export function registerServiceWorker() {
         }
       });
     });
+  } else {
+    console.warn('Service workers are not supported in this browser');
   }
 }
 
@@ -249,4 +250,15 @@ function hideInstallButton() {
   if (installButton) {
     installButton.remove();
   }
-} 
+}
+
+// Export additional PWA utility functions
+export function isPWAInstalled() {
+  return window.matchMedia('(display-mode: standalone)').matches || 
+         (window.navigator as any).standalone === true;
+}
+
+// Function to check if the browser supports PWA features
+export function isPWASupported() {
+  return 'serviceWorker' in navigator && 'PushManager' in window;
+}
