@@ -8,18 +8,26 @@ import App from './App';
 import './index.css';
 import { registerServiceWorker, checkInstallability, isPWASupported } from './lib/pwa';
 
-ReactDOM.createRoot(document.getElementById('root')!).render(
-  <React.StrictMode>
-    <App />
-  </React.StrictMode>
-);
+// Create root element first to prevent "Target container is not a DOM element" error
+const rootElement = document.getElementById('root');
 
-// Register service worker for PWA functionality
-if (isPWASupported()) {
-  console.log('PWA features are supported in this browser');
-  registerServiceWorker();
-  // Check if the app can be installed
-  checkInstallability();
+// Check if root element exists before rendering
+if (rootElement) {
+  ReactDOM.createRoot(rootElement).render(
+    <React.StrictMode>
+      <App />
+    </React.StrictMode>
+  );
+
+  // Register service worker for PWA functionality
+  if (isPWASupported()) {
+    console.log('PWA features are supported in this browser');
+    registerServiceWorker();
+    // Check if the app can be installed
+    checkInstallability();
+  } else {
+    console.log('PWA features are not fully supported in this browser');
+  }
 } else {
-  console.log('PWA features are not fully supported in this browser');
+  console.error('Root element not found in the DOM');
 }
