@@ -7,6 +7,21 @@
   "display": "standalone",
   "background_color": "#ffffff",
   "theme_color": "#ffffff",
+  "dir": "ltr",
+  "lang": "en-US",
+  "orientation": "portrait",
+  "scope": "/",
+  "id": "/",
+  "categories": ["business", "logistics", "transportation"],
+  "screenshots": [
+    {
+      "src": "icons/screenshot-1.png",
+      "sizes": "1280x720",
+      "type": "image/png",
+      "platform": "wide",
+      "label": "Transport Portal Dashboard"
+    }
+  ],
   "icons": [
     {
       "src": "icons/icon-192x192.png",
@@ -21,6 +36,18 @@
       "purpose": "any maskable"
     }
   ],
-  "orientation": "portrait",
-  "categories": ["business", "logistics", "transportation"]
+  "shortcuts": [
+    {
+      "name": "Add Entry",
+      "url": "/add-entry",
+      "icons": [
+        {
+          "src": "icons/icon-192x192.png",
+          "sizes": "192x192"
+        }
+      ]
+    }
+  ],
+  "related_applications": [],
+  "prefer_related_applications": false
 }

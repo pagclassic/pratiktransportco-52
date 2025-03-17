@@ -22,7 +22,10 @@ if (rootElement) {
   // Register service worker for PWA functionality
   if (isPWASupported()) {
     console.log('PWA features are supported in this browser');
-    registerServiceWorker();
+    registerServiceWorker()
+      .then(() => console.log('Service worker registered successfully'))
+      .catch(error => console.error('Service worker registration failed:', error));
+    
     // Check if the app can be installed
     checkInstallability();
   } else {

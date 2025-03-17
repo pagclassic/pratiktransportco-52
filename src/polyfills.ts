@@ -12,4 +12,5 @@ window.global = window.global || window;
 export { Buffer } from 'buffer';
 export { default as process } from 'process/browser';
 
-// Simplified polyfills to prevent issues
+// Console message to confirm polyfills are loaded
+console.log('Polyfills loaded successfully');

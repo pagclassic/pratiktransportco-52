@@ -17,14 +17,23 @@
       padding: 20px;
       text-align: center;
       background-color: #f8f9fa;
+      color: #333;
+    }
+    .container {
+      max-width: 500px;
+      padding: 2rem;
+      background-color: white;
+      border-radius: 8px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
     }
     h1 {
       color: #333;
-      margin-bottom: 10px;
+      margin-bottom: 1rem;
     }
     p {
       color: #666;
-      margin-bottom: 20px;
+      margin-bottom: 1.5rem;
+      line-height: 1.5;
     }
     button {
       background-color: #3b82f6;
@@ -34,12 +43,30 @@
       border-radius: 5px;
       cursor: pointer;
       font-weight: 500;
+      transition: background-color 0.2s;
+    }
+    button:hover {
+      background-color: #2563eb;
+    }
+    .icon {
+      font-size: 4rem;
+      margin-bottom: 1rem;
     }
   </style>
 </head>
 <body>
-  <h1>You're Offline</h1>
-  <p>Please check your internet connection and try again.</p>
-  <button onclick="window.location.reload()">Retry</button>
+  <div class="container">
+    <div class="icon">📡</div>
+    <h1>You're Offline</h1>
+    <p>It looks like you've lost your internet connection. Please check your connection and try again.</p>
+    <p>The Transport Portal requires an internet connection to access the latest data.</p>
+    <button onclick="window.location.reload()">Try Again</button>
+  </div>
+  <script>
+    // Check if we're back online
+    window.addEventListener('online', () => {
+      window.location.reload();
+    });
+  </script>
 </body>
 </html>
