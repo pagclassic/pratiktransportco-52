@@ -15,4 +15,19 @@ export { Buffer } from 'buffer';
 export { default as process } from 'process/browser';
 export { default as stream } from 'stream-browserify';
 export { default as util } from 'util';
-export { default as fs } from 'browserify-fs'; 
+export { default as fs } from 'browserify-fs';
+
+// Polyfill global Buffer
+if (typeof window !== 'undefined') {
+  window.Buffer = require('buffer').Buffer;
+}
+
+// Polyfill global process
+if (typeof window !== 'undefined') {
+  window.process = require('process/browser');
+}
+
+// Add other necessary globals
+if (typeof window !== 'undefined') {
+  (window as any).global = window;
+} 

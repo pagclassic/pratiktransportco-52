@@ -86,7 +86,8 @@ export default defineConfig(({ mode }) => ({
       tty: 'tty-browserify',
       vm: 'vm-browserify',
       domain: 'domain-browser',
-      fs: 'browserify-fs'
+      fs: 'browserify-fs',
+      path: 'path-browserify'
     }
   },
   optimizeDeps: {
@@ -95,22 +96,15 @@ export default defineConfig(({ mode }) => ({
       'buffer',
       'process/browser',
       'util',
-      'browserify-fs'
+      'browserify-fs',
+      'events',
+      'assert',
+      'path-browserify'
     ],
     esbuildOptions: {
       define: {
         global: 'globalThis'
-      },
-      plugins: [
-        {
-          name: 'empty-fs',
-          setup(build) {
-            build.onResolve({ filter: /^fs$/ }, () => {
-              return { path: 'empty:fs', external: true }
-            })
-          }
-        }
-      ]
+      }
     }
   },
   plugins: [
@@ -213,7 +207,7 @@ export default defineConfig(({ mode }) => ({
   ].filter(Boolean),
   define: {
     'process.env': {},
-    global: {},
+    global: 'globalThis',
     'process.version': '"v16.0.0"',
     'process.platform': '"browser"',
     'process.browser': true,
