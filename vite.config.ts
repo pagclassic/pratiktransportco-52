@@ -132,7 +132,7 @@ export default defineConfig(({ mode }) => ({
     }),
     VitePWA({
       registerType: 'autoUpdate',
-      includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'masked-icon.svg'],
+      includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'masked-icon.svg', 'offline.html'],
       manifest: {
         name: 'Pratik Transport Portal',
         short_name: 'Transport',
@@ -154,10 +154,15 @@ export default defineConfig(({ mode }) => ({
         ],
         start_url: '/',
         display: 'standalone',
-        background_color: '#ffffff'
+        background_color: '#ffffff',
+        orientation: 'portrait',
+        categories: ['business', 'logistics', 'transportation']
       },
+      strategies: 'generateSW',
       workbox: {
         globPatterns: ['**/*.{js,css,html,ico,png,svg,jpeg}'],
+        navigateFallback: 'index.html',
+        navigateFallbackDenylist: [/^\/api/, /^\/admin/],
         runtimeCaching: [
           {
             urlPattern: /^https:\/\/api\.supabase\.co\/.*/i,
@@ -172,8 +177,37 @@ export default defineConfig(({ mode }) => ({
                 statuses: [0, 200]
               }
             }
+          },
+          {
+            urlPattern: /\.(?:png|jpg|jpeg|svg|gif|webp)$/,
+            handler: 'CacheFirst',
+            options: {
+              cacheName: 'images-cache',
+              expiration: {
+                maxEntries: 50,
+                maxAgeSeconds: 60 * 60 * 24 * 30 // 30 days
+              }
+            }
+          },
+          {
+            urlPattern: /\.(?:js|css)$/,
+            handler: 'StaleWhileRevalidate',
+            options: {
+              cacheName: 'static-resources',
+              expiration: {
+                maxEntries: 30,
+                maxAgeSeconds: 60 * 60 * 24 * 7 // 7 days
+              }
+            }
           }
-        ]
+        ],
+        skipWaiting: true,
+        clientsClaim: true
+      },
+      // Configure offline fallback
+      injectRegister: 'auto',
+      devOptions: {
+        enabled: true
       }
     })
   ].filter(Boolean),
