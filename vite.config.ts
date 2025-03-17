@@ -40,7 +40,6 @@ export default defineConfig(({ mode }) => ({
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
-      "zod": path.resolve(__dirname, "node_modules/zod"),
       "stream": "stream-browserify",
       "http": "stream-http",
       "https": "https-browserify",
