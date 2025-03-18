@@ -1,3 +1,4 @@
+
 import { TransportEntry } from "@/types/transport";
 import { format } from "date-fns";
 
@@ -53,6 +54,7 @@ export const exportToExcel = (entries: TransportEntry[]) => {
     ["Total Amount:", `₹${totalAmount.toLocaleString()}`, "", "", "", "", "", "", "", ""],
     ["Paid Amount:", `₹${paidAmount.toLocaleString()}`, "", "", "", "", "", "", "", ""],
     ["Unpaid Amount:", `₹${unpaidAmount.toLocaleString()}`, "", "", "", "", "", "", "", ""],
+    ["Remaining Balance:", `₹${unpaidAmount.toLocaleString()}`, "", "", "", "", "", "", "", ""], // Added remaining balance
     ["Average Amount:", `₹${Math.round(averageAmount).toLocaleString()}`, "", "", "", "", "", "", "", ""],
     ["Unique Vehicles:", uniqueVehicles, "", "", "", "", "", "", "", ""],
     ["Unique Drivers:", uniqueDrivers, "", "", "", "", "", "", "", ""],

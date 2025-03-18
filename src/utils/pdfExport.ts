@@ -1,3 +1,4 @@
+
 import { TransportEntry } from "@/types/transport";
 import { format } from "date-fns";
 import jsPDF from "jspdf";
@@ -76,7 +77,7 @@ export const exportToPDF = (entries: TransportEntry[], startDate: Date, endDate:
       cellPadding: 3,
     },
     margin: { left: 14 },
-    tableWidth: 100,
+    tableWidth: 180, // Increase table width
   });
 
   // Status Distribution
@@ -111,7 +112,7 @@ export const exportToPDF = (entries: TransportEntry[], startDate: Date, endDate:
       cellPadding: 3,
     },
     margin: { left: 14 },
-    tableWidth: 100,
+    tableWidth: 180, // Increase table width
   });
 
   // Entries Table
@@ -120,16 +121,16 @@ export const exportToPDF = (entries: TransportEntry[], startDate: Date, endDate:
   doc.setTextColor(41, 128, 185);
   doc.text("Detailed Entries", 14, yPos);
 
-  // Add entries table
+  // Add entries table with fixed currency symbols
   const tableData = entries.map((entry) => [
     format(new Date(entry.date), "dd/MM/yyyy"),
     entry.vehicleNumber,
     entry.driverName || "-",
     entry.transportName || "-",
     entry.place || "-",
-    `₹${entry.rentAmount.toLocaleString()}`,
-    entry.advanceAmount ? `₹${entry.advanceAmount.toLocaleString()}` : "-",
-    `₹${(entry.rentAmount - (entry.advanceAmount || 0)).toLocaleString()}`,
+    `₹${entry.rentAmount.toLocaleString()}`, // Fix currency format
+    entry.advanceAmount ? `₹${entry.advanceAmount.toLocaleString()}` : "-", // Fix currency format
+    `₹${(entry.rentAmount - (entry.advanceAmount || 0)).toLocaleString()}`, // Fix currency format
     entry.balanceStatus,
     entry.balanceDate ? format(new Date(entry.balanceDate), "dd/MM/yyyy") : "-",
   ]);
@@ -155,6 +156,12 @@ export const exportToPDF = (entries: TransportEntry[], startDate: Date, endDate:
     styles: {
       fontSize: 8,
       cellPadding: 2,
+      overflow: 'linebreak', // Handle text overflow
+    },
+    columnStyles: {
+      5: { halign: 'right', cellWidth: 20 }, // Rent amount column
+      6: { halign: 'right', cellWidth: 20 }, // Advance amount column
+      7: { halign: 'right', cellWidth: 20 }, // Balance amount column
     },
     headStyles: {
       fillColor: [41, 128, 185],
@@ -162,8 +169,10 @@ export const exportToPDF = (entries: TransportEntry[], startDate: Date, endDate:
       fontSize: 8,
       fontStyle: "bold",
     },
+    margin: { left: 10, right: 10 }, // Adjust margins to fit content
+    tableWidth: 'auto', // Let table adapt to content
   });
 
   // Save the PDF
   doc.save(`transport-report-${format(new Date(), "yyyy-MM-dd")}.pdf`);
-}; 
+};
