@@ -5,6 +5,7 @@ import { toast } from "sonner";
 
 // Transform date objects for Supabase (Date objects to ISO strings)
 const prepareEntryForDb = (entry: TransportEntry) => {
+  console.log('Preparing entry for database:', entry);
   return {
     ...entry,
     date: entry.date instanceof Date ? entry.date.toISOString() : entry.date,
@@ -35,19 +36,20 @@ const prepareEntryForDb = (entry: TransportEntry) => {
 
 // Transform Supabase data to our app's format (ISO strings to Date objects)
 const transformDbEntry = (entry: any): TransportEntry => {
+  console.log('Transforming DB entry:', entry);
   return {
     id: entry.id,
-    date: new Date(entry.date),
-    vehicleNumber: entry.vehicle_number,
+    date: entry.date ? new Date(entry.date) : new Date(),
+    vehicleNumber: entry.vehicle_number || "",
     driverName: entry.driver_name || "",
     driverMobile: entry.driver_mobile || "",
     place: entry.place || "",
     transportName: entry.transport_name || "",
-    rentAmount: Number(entry.rent_amount),
+    rentAmount: Number(entry.rent_amount) || 0,
     advanceAmount: entry.advance_amount ? Number(entry.advance_amount) : null,
     advanceDate: entry.advance_date ? new Date(entry.advance_date) : null,
     advanceType: entry.advance_type || "Cash",
-    balanceStatus: entry.balance_status,
+    balanceStatus: entry.balance_status || "Pending",
     balanceDate: entry.balance_date ? new Date(entry.balance_date) : null,
   };
 };
@@ -84,6 +86,7 @@ export const fetchTransportEntries = async (): Promise<TransportEntry[]> => {
 
 export const createTransportEntry = async (entry: TransportEntry): Promise<TransportEntry | null> => {
   try {
+    console.log('Creating transport entry:', entry);
     const { id, ...entryData } = entry;
     const preparedEntry = prepareEntryForDb(entryData as TransportEntry);
     
@@ -99,6 +102,7 @@ export const createTransportEntry = async (entry: TransportEntry): Promise<Trans
       return null;
     }
 
+    console.log('Entry created successfully:', data);
     toast.success('Entry created successfully');
     return transformDbEntry(data);
   } catch (error) {
@@ -110,6 +114,7 @@ export const createTransportEntry = async (entry: TransportEntry): Promise<Trans
 
 export const updateTransportEntry = async (entry: TransportEntry): Promise<boolean> => {
   try {
+    console.log('Updating transport entry:', entry);
     const preparedEntry = prepareEntryForDb(entry);
     const { id, ...updateData } = preparedEntry;
 
@@ -124,6 +129,7 @@ export const updateTransportEntry = async (entry: TransportEntry): Promise<boole
       return false;
     }
 
+    console.log('Entry updated successfully');
     toast.success('Entry updated successfully');
     return true;
   } catch (error) {
@@ -135,6 +141,7 @@ export const updateTransportEntry = async (entry: TransportEntry): Promise<boole
 
 export const deleteTransportEntry = async (id: string): Promise<boolean> => {
   try {
+    console.log('Deleting transport entry:', id);
     const { error } = await supabase
       .from('transport_entries')
       .delete()
@@ -146,6 +153,7 @@ export const deleteTransportEntry = async (id: string): Promise<boolean> => {
       return false;
     }
 
+    console.log('Entry deleted successfully');
     toast.success('Entry deleted successfully');
     return true;
   } catch (error) {
