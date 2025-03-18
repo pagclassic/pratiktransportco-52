@@ -1,3 +1,4 @@
+
 import { TransportEntry } from "@/types/transport";
 import { format } from "date-fns";
 
@@ -6,7 +7,7 @@ export const exportToCSV = (entries: TransportEntry[]) => {
   const headers = [
     "Date",
     "Vehicle Number",
-    "Driver",
+    "Weight of Goods", // Changed from Driver
     "Transport Name",
     "Place",
     "Rent Amount",
@@ -23,7 +24,7 @@ export const exportToCSV = (entries: TransportEntry[]) => {
     return [
       format(entry.date, "dd/MM/yyyy"),
       entry.vehicleNumber,
-      entry.driverName || "-",
+      entry.weight || "-", // Changed from driverName
       entry.transportName || "-",
       entry.place || "-",
       entry.rentAmount.toString(),

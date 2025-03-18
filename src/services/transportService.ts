@@ -13,7 +13,7 @@ const prepareEntryForDb = (entry: TransportEntry) => {
     balance_date: entry.balanceDate instanceof Date ? entry.balanceDate.toISOString() : entry.balanceDate,
     // Map to DB column names
     vehicle_number: entry.vehicleNumber,
-    driver_name: entry.driverName,
+    driver_name: entry.weight, // Use driver_name column for weight
     driver_mobile: entry.driverMobile,
     transport_name: entry.transportName,
     rent_amount: entry.rentAmount,
@@ -22,7 +22,7 @@ const prepareEntryForDb = (entry: TransportEntry) => {
     balance_status: entry.balanceStatus,
     // Remove JavaScript properties that don't exist in the DB
     vehicleNumber: undefined,
-    driverName: undefined,
+    weight: undefined, // Changed from driverName
     driverMobile: undefined,
     transportName: undefined,
     rentAmount: undefined,
@@ -41,7 +41,7 @@ const transformDbEntry = (entry: any): TransportEntry => {
     id: entry.id,
     date: entry.date ? new Date(entry.date) : new Date(),
     vehicleNumber: entry.vehicle_number || "",
-    driverName: entry.driver_name || "",
+    weight: entry.driver_name || "", // Use driver_name field for weight
     driverMobile: entry.driver_mobile || "",
     place: entry.place || "",
     transportName: entry.transport_name || "",

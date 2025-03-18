@@ -3,7 +3,7 @@ export interface TransportEntry {
   id: string;
   date: Date;
   vehicleNumber: string;
-  driverName: string;
+  weight: string; // Changed from driverName
   driverMobile: string;
   place: string;
   transportName: string;

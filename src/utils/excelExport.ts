@@ -13,13 +13,13 @@ export const exportToExcel = (entries: TransportEntry[]) => {
     .reduce((sum, entry) => sum + entry.rentAmount, 0);
   const averageAmount = entries.length > 0 ? totalAmount / entries.length : 0;
   const uniqueVehicles = new Set(entries.map(entry => entry.vehicleNumber)).size;
-  const uniqueDrivers = new Set(entries.map(entry => entry.driverName)).size;
+  const uniqueWeights = new Set(entries.map(entry => entry.weight).filter(Boolean)).size; // Changed from drivers
 
   // Format the data for CSV
   const headers = [
     "Date",
     "Vehicle Number",
-    "Driver",
+    "Weight of Goods", // Changed from Driver
     "Transport Name",
     "Place",
     "Rent Amount (₹)",
@@ -35,7 +35,7 @@ export const exportToExcel = (entries: TransportEntry[]) => {
     return [
       format(new Date(entry.date), "dd/MM/yyyy"),
       entry.vehicleNumber,
-      entry.driverName || "-",
+      entry.weight || "-", // Changed from driverName
       entry.transportName || "-",
       entry.place || "-",
       entry.rentAmount.toLocaleString(),
@@ -57,7 +57,7 @@ export const exportToExcel = (entries: TransportEntry[]) => {
     ["Remaining Balance:", `₹${unpaidAmount.toLocaleString()}`, "", "", "", "", "", "", "", ""], // Added remaining balance
     ["Average Amount:", `₹${Math.round(averageAmount).toLocaleString()}`, "", "", "", "", "", "", "", ""],
     ["Unique Vehicles:", uniqueVehicles, "", "", "", "", "", "", "", ""],
-    ["Unique Drivers:", uniqueDrivers, "", "", "", "", "", "", "", ""],
+    ["Unique Weights:", uniqueWeights, "", "", "", "", "", "", "", ""], // Changed from Drivers
   ];
 
   // Status distribution

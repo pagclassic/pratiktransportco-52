@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { format } from "date-fns";
 import { useForm } from "react-hook-form";
@@ -35,7 +36,7 @@ import {
 type FormValues = {
   date: Date | undefined;
   vehicleNumber: string;
-  driverName: string;
+  weight: string; // Changed from driverName
   driverMobile: string;
   place: string;
   transportName: string;
@@ -61,7 +62,7 @@ const TransportForm = ({ onSubmit, initialData, isEditing = false }: TransportFo
     defaultValues: {
       date: undefined,
       vehicleNumber: "",
-      driverName: "",
+      weight: "", // Changed from driverName
       driverMobile: "",
       place: "",
       transportName: "",
@@ -81,7 +82,7 @@ const TransportForm = ({ onSubmit, initialData, isEditing = false }: TransportFo
       form.reset({
         date: initialData.date,
         vehicleNumber: initialData.vehicleNumber,
-        driverName: initialData.driverName,
+        weight: initialData.weight, // Changed from driverName
         driverMobile: initialData.driverMobile,
         place: initialData.place,
         transportName: initialData.transportName,
@@ -121,7 +122,7 @@ const TransportForm = ({ onSubmit, initialData, isEditing = false }: TransportFo
         id: initialData?.id || uuidv4(),
         date: values.date,
         vehicleNumber: values.vehicleNumber,
-        driverName: values.driverName,
+        weight: values.weight, // Changed from driverName
         driverMobile: values.driverMobile,
         place: values.place,
         transportName: values.transportName,
@@ -146,7 +147,7 @@ const TransportForm = ({ onSubmit, initialData, isEditing = false }: TransportFo
         form.reset({
           date: undefined,
           vehicleNumber: "",
-          driverName: "",
+          weight: "", // Changed from driverName
           driverMobile: "",
           place: "",
           transportName: "",
@@ -229,15 +230,15 @@ const TransportForm = ({ onSubmit, initialData, isEditing = false }: TransportFo
             )}
           />
 
-          {/* Driver Name */}
+          {/* Weight of Goods (Changed from Driver Name) */}
           <FormField
             control={form.control}
-            name="driverName"
+            name="weight"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Driver Name</FormLabel>
+                <FormLabel>Weight of Goods</FormLabel>
                 <FormControl>
-                  <Input placeholder="Driver's full name" {...field} />
+                  <Input placeholder="Weight of goods" {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>

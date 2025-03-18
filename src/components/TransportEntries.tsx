@@ -1,3 +1,4 @@
+
 import { format } from "date-fns";
 import {
   Table,
@@ -76,7 +77,7 @@ const TransportEntries = ({ entries, onDelete }: TransportEntriesProps) => {
   const filteredEntries = entries
     .filter(entry => 
       (entry.vehicleNumber.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      entry.driverName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      entry.weight.toLowerCase().includes(searchTerm.toLowerCase()) || // Changed from driverName
       entry.place.toLowerCase().includes(searchTerm.toLowerCase()) ||
       entry.transportName.toLowerCase().includes(searchTerm.toLowerCase())) &&
       (statusFilter === "ALL" || entry.balanceStatus === statusFilter)
@@ -288,7 +289,7 @@ const TransportEntries = ({ entries, onDelete }: TransportEntriesProps) => {
                 <TableRow>
                   <TableHead className="font-semibold">Date</TableHead>
                   <TableHead className="font-semibold">Vehicle Number</TableHead>
-                  <TableHead className="font-semibold">Driver</TableHead>
+                  <TableHead className="font-semibold">Weight of Goods</TableHead> {/* Changed from Driver */}
                   <TableHead className="font-semibold">Transport Name</TableHead>
                   <TableHead className="font-semibold">Place</TableHead>
                   <TableHead className="font-semibold text-right">Rent Amount</TableHead>
@@ -319,7 +320,7 @@ const TransportEntries = ({ entries, onDelete }: TransportEntriesProps) => {
                           {entry.vehicleNumber}
                         </div>
                       </TableCell>
-                      <TableCell>{entry.driverName || "—"}</TableCell>
+                      <TableCell>{entry.weight || "—"}</TableCell> {/* Changed from driverName */}
                       <TableCell>{entry.transportName || "—"}</TableCell>
                       <TableCell>{entry.place || "—"}</TableCell>
                       <TableCell className="text-right">₹{entry.rentAmount.toLocaleString()}</TableCell>

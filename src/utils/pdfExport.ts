@@ -24,7 +24,7 @@ export const exportToPDF = (entries: TransportEntry[], startDate: Date, endDate:
     .reduce((sum, entry) => sum + entry.rentAmount, 0);
   const averageAmount = entries.length > 0 ? totalAmount / entries.length : 0;
   const uniqueVehicles = new Set(entries.map(entry => entry.vehicleNumber)).size;
-  const uniqueDrivers = new Set(entries.map(entry => entry.driverName)).size;
+  const uniqueWeights = new Set(entries.map(entry => entry.weight).filter(Boolean)).size; // Changed from drivers
 
   // Add title and header
   doc.setFontSize(20);
@@ -57,7 +57,7 @@ export const exportToPDF = (entries: TransportEntry[], startDate: Date, endDate:
     { label: "Unpaid Amount", value: `₹${unpaidAmount.toLocaleString()}` },
     { label: "Average Amount", value: `₹${Math.round(averageAmount).toLocaleString()}` },
     { label: "Unique Vehicles", value: uniqueVehicles.toString() },
-    { label: "Unique Drivers", value: uniqueDrivers.toString() },
+    { label: "Unique Weights", value: uniqueWeights.toString() }, // Changed from drivers
   ];
 
   // Create summary table
@@ -125,7 +125,7 @@ export const exportToPDF = (entries: TransportEntry[], startDate: Date, endDate:
   const tableData = entries.map((entry) => [
     format(new Date(entry.date), "dd/MM/yyyy"),
     entry.vehicleNumber,
-    entry.driverName || "-",
+    entry.weight || "-", // Changed from driverName
     entry.transportName || "-",
     entry.place || "-",
     `₹${entry.rentAmount.toLocaleString()}`, // Fix currency format
@@ -141,7 +141,7 @@ export const exportToPDF = (entries: TransportEntry[], startDate: Date, endDate:
       [
         "Date",
         "Vehicle",
-        "Driver",
+        "Weight", // Changed from Driver
         "Transport",
         "Place",
         "Rent",
