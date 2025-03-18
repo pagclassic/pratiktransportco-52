@@ -1,16 +1,24 @@
 
-// Import polyfills
-import 'buffer';
-import 'process/browser';
+// Polyfills for browser environment
+// Note: We're not directly importing Node.js modules in browser context
 
-// Make them available globally
-window.Buffer = window.Buffer || require('buffer').Buffer;
-window.process = window.process || require('process/browser');
+// Create browser-compatible versions of Node.js globals
+window.Buffer = window.Buffer || { 
+  from: (data: any) => data,
+  alloc: (size: number) => new Uint8Array(size)
+};
+
+window.process = window.process || {
+  env: {},
+  browser: true,
+  version: '',
+  versions: {},
+  platform: 'browser'
+};
+
 window.global = window.global || window;
 
-// Export them for use in other modules
-export { Buffer } from 'buffer';
-export { default as process } from 'process/browser';
-
 // Console message to confirm polyfills are loaded
-console.log('Polyfills loaded successfully');
+console.log('Browser-compatible polyfills loaded successfully');
+
+export {};

@@ -14,29 +14,23 @@
     <meta name="description" content="Transport management and tracking application" />
     <title>Transport Portal</title>
     <script>
-      // Polyfills for Node.js modules
+      // Inline polyfills to ensure they're available before any modules load
       window.global = window;
-      if (typeof Buffer === 'undefined') {
-        window.Buffer = {
-          from: function(str) { return str; },
-          alloc: function(size) { return new Array(size).fill(0); }
-        };
-      }
-      if (typeof process === 'undefined') {
-        window.process = {
-          env: {},
-          versions: {},
-          platform: 'browser',
-          arch: 'browser'
-        };
-      }
+      window.process = window.process || {
+        env: {},
+        versions: {},
+        platform: 'browser',
+        browser: true
+      };
+      window.Buffer = window.Buffer || {
+        from: function(data) { return data; },
+        alloc: function(size) { return new Uint8Array(size); }
+      };
     </script>
   </head>
 
   <body>
     <div id="root"></div>
-    <script src="https://cdn.gpteng.co/gptengineer.js" type="module"></script>
     <script type="module" src="/src/main.tsx"></script>
-    
   </body>
 </html>

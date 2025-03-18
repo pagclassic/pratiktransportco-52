@@ -1,3 +1,4 @@
+
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react-swc";
 import path from "path";
@@ -5,7 +6,6 @@ import { componentTagger } from "lovable-tagger";
 import { VitePWA } from 'vite-plugin-pwa';
 import { fileURLToPath } from "url";
 import { nodePolyfills } from 'vite-plugin-node-polyfills';
-import nodePolyfills2 from 'rollup-plugin-polyfill-node';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -23,10 +23,7 @@ export default defineConfig(({ mode }) => ({
     assetsDir: 'assets',
     sourcemap: true,
     rollupOptions: {
-      plugins: [
-        nodePolyfills2()
-      ],
-      external: ['fs', 'path', 'crypto', 'stream', 'http', 'https', 'url', 'zlib'],
+      external: [],
       output: {
         manualChunks: {
           vendor: [
@@ -67,47 +64,9 @@ export default defineConfig(({ mode }) => ({
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
-      stream: 'stream-browserify',
-      http: 'stream-http',
-      https: 'https-browserify',
-      url: 'url',
-      zlib: 'browserify-zlib',
-      crypto: 'crypto-browserify',
-      buffer: 'buffer',
-      util: 'util',
-      process: 'process/browser',
-      events: 'events',
-      assert: 'assert',
-      querystring: 'querystring-es3',
-      punycode: 'punycode',
-      os: 'os-browserify/browser',
-      constants: 'constants-browserify',
-      timers: 'timers-browserify',
-      tty: 'tty-browserify',
-      vm: 'vm-browserify',
-      domain: 'domain-browser',
-      fs: 'browserify-fs',
-      path: 'path-browserify'
     }
   },
   optimizeDeps: {
-    include: [
-      'stream-browserify',
-      'buffer',
-      'process/browser',
-      'util',
-      'browserify-fs',
-      'events',
-      'assert',
-      'path-browserify',
-      'yocto-queue',
-      'p-limit',
-      'p-locate',
-      'locate-path',
-      'find-up',
-      'pkg-dir'
-    ],
-    exclude: [],
     esbuildOptions: {
       define: {
         global: 'globalThis'
@@ -120,16 +79,11 @@ export default defineConfig(({ mode }) => ({
     }),
     mode === 'development' && componentTagger(),
     nodePolyfills({
-      include: ['stream', 'util', 'buffer', 'process', 'fs'],
       globals: {
         Buffer: true,
         global: true,
         process: true
       },
-      overrides: {
-        stream: 'stream-browserify',
-        fs: 'browserify-fs'
-      }
     }),
     VitePWA({
       registerType: 'autoUpdate',
