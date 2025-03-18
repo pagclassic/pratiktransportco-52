@@ -16,12 +16,13 @@
     <script>
       // Inline polyfills to ensure they're available before any modules load
       window.global = window;
+      // @ts-ignore
       window.process = window.process || {
         env: {},
         versions: {},
-        platform: 'browser',
-        browser: true
+        platform: 'browser'
       };
+      // @ts-ignore
       window.Buffer = window.Buffer || {
         from: function(data) { return data; },
         alloc: function(size) { return new Uint8Array(size); }
