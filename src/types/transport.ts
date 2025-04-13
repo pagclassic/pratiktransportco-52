@@ -13,6 +13,7 @@ export interface TransportEntry {
   advanceType: 'Cash' | 'Bank Transfer' | 'Check' | 'UPI';
   balanceStatus: 'PAID' | 'UNPAID' | 'PARTIAL';
   balanceDate: Date | null;
+  companyId?: string;
 }
 
 export interface TransportCompany {
@@ -26,4 +27,11 @@ export interface TransportCompany {
 export interface Admin {
   email: string;
   isLoggedIn: boolean;
+}
+
+export interface User {
+  email: string;
+  companyId?: string;
+  companyName?: string;
+  isAdmin?: boolean;
 }

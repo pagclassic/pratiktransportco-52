@@ -11,6 +11,10 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { User } from "lucide-react";
 
+// Admin credentials
+const ADMIN_EMAIL = "pratikgagurde35@gmail.com";
+const ADMIN_PASSWORD = "Pratik121ff@ybl";
+
 const formSchema = z.object({
   email: z.string().email("Please enter a valid email"),
   password: z.string().min(1, "Password is required"),
@@ -33,6 +37,17 @@ const UserLogin = () => {
   const onSubmit = (values: FormValues) => {
     setIsLoading(true);
     
+    // Check if it's an admin login attempt
+    if (values.email === ADMIN_EMAIL && values.password === ADMIN_PASSWORD) {
+      // For admin login, redirect to email verification
+      setTimeout(() => {
+        setIsLoading(false);
+        navigate("/verify-admin", { state: { email: values.email } });
+      }, 1000);
+      return;
+    }
+    
+    // Regular user login
     // Get user credentials from localStorage
     const userCredentials = JSON.parse(localStorage.getItem('userCredentials') || '[]');
     const user = userCredentials.find((user: any) => user.email === values.email && user.password === values.password);
@@ -120,14 +135,6 @@ const UserLogin = () => {
               </Button>
             </form>
           </Form>
-          <div className="mt-6 text-center">
-            <button
-              onClick={() => navigate("/admin")}
-              className="text-sm text-primary hover:underline"
-            >
-              Admin Login
-            </button>
-          </div>
         </CardContent>
       </Card>
     </div>

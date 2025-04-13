@@ -20,9 +20,10 @@ const prepareEntryForDb = (entry: TransportEntry) => {
     advance_amount: entry.advanceAmount,
     advance_type: entry.advanceType,
     balance_status: entry.balanceStatus,
+    company_id: entry.companyId, // Add company_id field
     // Remove JavaScript properties that don't exist in the DB
     vehicleNumber: undefined,
-    weight: undefined, // Changed from driverName
+    weight: undefined,
     driverMobile: undefined,
     transportName: undefined,
     rentAmount: undefined,
@@ -30,7 +31,8 @@ const prepareEntryForDb = (entry: TransportEntry) => {
     advanceDate: undefined,
     advanceType: undefined,
     balanceStatus: undefined,
-    balanceDate: undefined
+    balanceDate: undefined,
+    companyId: undefined
   };
 };
 
@@ -41,7 +43,7 @@ const transformDbEntry = (entry: any): TransportEntry => {
     id: entry.id,
     date: entry.date ? new Date(entry.date) : new Date(),
     vehicleNumber: entry.vehicle_number || "",
-    weight: entry.driver_name || "", // Use driver_name field for weight
+    weight: entry.driver_name || "",
     driverMobile: entry.driver_mobile || "",
     place: entry.place || "",
     transportName: entry.transport_name || "",
@@ -51,6 +53,7 @@ const transformDbEntry = (entry: any): TransportEntry => {
     advanceType: entry.advance_type || "Cash",
     balanceStatus: entry.balance_status || "Pending",
     balanceDate: entry.balance_date ? new Date(entry.balance_date) : null,
+    companyId: entry.company_id || null,
   };
 };
 
@@ -58,9 +61,27 @@ export const fetchTransportEntries = async (): Promise<TransportEntry[]> => {
   try {
     console.log('Fetching transport entries from Supabase...');
     
+    // Get current user from localStorage
+    const userData = localStorage.getItem('currentUser');
+    if (!userData) {
+      console.error('No user data found in localStorage');
+      return [];
+    }
+    
+    const user = JSON.parse(userData);
+    const companyId = user.companyId;
+    
+    if (!companyId) {
+      console.error('No company ID found in user data');
+      return [];
+    }
+    
+    console.log(`Fetching entries for company ID: ${companyId}`);
+    
     const { data, error } = await supabase
       .from('transport_entries')
       .select('*')
+      .eq('company_id', companyId)
       .order('date', { ascending: false });
 
     if (error) {
@@ -70,11 +91,11 @@ export const fetchTransportEntries = async (): Promise<TransportEntry[]> => {
     }
 
     if (!data || data.length === 0) {
-      console.log('No entries found in database');
+      console.log('No entries found for this company');
       return [];
     }
 
-    console.log(`Successfully fetched ${data.length} entries`);
+    console.log(`Successfully fetched ${data.length} entries for company ID: ${companyId}`);
     
     return data.map(entry => transformDbEntry(entry));
   } catch (error) {
@@ -86,9 +107,25 @@ export const fetchTransportEntries = async (): Promise<TransportEntry[]> => {
 
 export const createTransportEntry = async (entry: TransportEntry): Promise<TransportEntry | null> => {
   try {
-    console.log('Creating transport entry:', entry);
+    // Get current user's company ID
+    const userData = localStorage.getItem('currentUser');
+    if (!userData) {
+      toast.error('User data not found');
+      return null;
+    }
+    
+    const user = JSON.parse(userData);
+    const companyId = user.companyId;
+    
+    if (!companyId) {
+      toast.error('Company ID not found');
+      return null;
+    }
+    
+    console.log('Creating transport entry for company:', companyId);
     const { id, ...entryData } = entry;
-    const preparedEntry = prepareEntryForDb(entryData as TransportEntry);
+    const entryWithCompany = { ...entryData, companyId };
+    const preparedEntry = prepareEntryForDb(entryWithCompany as TransportEntry);
     
     const { data, error } = await supabase
       .from('transport_entries')

@@ -9,9 +9,9 @@ import Index from "./pages/Index";
 import DataEntryPage from "./pages/DataEntryPage";
 import EditEntryPage from "./pages/EditEntryPage";
 import NotFound from "./pages/NotFound";
-import AdminLogin from "./components/AdminLogin";
 import AdminDashboard from "./components/AdminDashboard";
 import UserLogin from "./components/UserLogin";
+import EmailVerification from "./components/EmailVerification";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -39,7 +39,7 @@ const AdminRoute = ({ children }: { children: React.ReactNode }) => {
   const isAdmin = adminData && JSON.parse(adminData).isLoggedIn;
   
   if (!isAdmin) {
-    return <Navigate to="/admin" replace />;
+    return <Navigate to="/login" replace />;
   }
   
   return <>{children}</>;
@@ -55,7 +55,12 @@ const App = () => {
           <Routes>
             {/* Public routes */}
             <Route path="/login" element={<UserLogin />} />
-            <Route path="/admin" element={<AdminLogin />} />
+            <Route 
+              path="/verify-admin" 
+              element={
+                <EmailVerification email="pratikgagurde35@gmail.com" />
+              } 
+            />
             
             {/* Protected routes */}
             <Route path="/" element={
