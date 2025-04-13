@@ -34,12 +34,20 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { TransportCompany } from '@/types/transport';
+import { 
+  fetchTransportCompanies, 
+  createTransportCompany, 
+  updateTransportCompany, 
+  deleteTransportCompany,
+  toggleTransportCompanyStatus 
+} from '@/services/transportService';
 
 const AdminDashboard = () => {
   const navigate = useNavigate();
   const [companies, setCompanies] = useState<TransportCompany[]>([]);
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const [newCompany, setNewCompany] = useState({ name: '', email: '', password: '' });
   const [editingCompany, setEditingCompany] = useState<TransportCompany | null>(null);
   
@@ -51,28 +59,21 @@ const AdminDashboard = () => {
       return;
     }
     
-    // Load companies from localStorage or initialize with sample data
-    const storedCompanies = localStorage.getItem('transportCompanies');
-    if (storedCompanies) {
-      setCompanies(JSON.parse(storedCompanies).map((company: any) => ({
-        ...company,
-        createdAt: new Date(company.createdAt)
-      })));
-    } else {
-      // Sample data
-      const sampleCompanies: TransportCompany[] = [
-        {
-          id: '1',
-          name: 'Pratik Transport Co',
-          email: 'pratik@example.com',
-          isActive: true,
-          createdAt: new Date()
-        }
-      ];
-      setCompanies(sampleCompanies);
-      localStorage.setItem('transportCompanies', JSON.stringify(sampleCompanies));
-    }
+    loadCompanies();
   }, [navigate]);
+
+  const loadCompanies = async () => {
+    setIsLoading(true);
+    try {
+      const companiesData = await fetchTransportCompanies();
+      setCompanies(companiesData);
+    } catch (error) {
+      console.error('Error loading companies:', error);
+      toast.error('Failed to load transport companies');
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const handleLogout = () => {
     localStorage.removeItem('admin');
@@ -80,90 +81,119 @@ const AdminDashboard = () => {
     navigate('/admin');
   };
 
-  const saveCompanies = (updatedCompanies: TransportCompany[]) => {
-    setCompanies(updatedCompanies);
-    localStorage.setItem('transportCompanies', JSON.stringify(updatedCompanies));
-  };
-
-  const handleToggleStatus = (id: string) => {
-    const updatedCompanies = companies.map(company => {
-      if (company.id === id) {
-        const newStatus = !company.isActive;
-        toast.success(`${company.name} ${newStatus ? 'activated' : 'paused'} successfully`);
-        return { ...company, isActive: newStatus };
+  const handleToggleStatus = async (id: string, currentStatus: boolean) => {
+    try {
+      const success = await toggleTransportCompanyStatus(id, !currentStatus);
+      if (success) {
+        setCompanies(companies.map(company => {
+          if (company.id === id) {
+            return { ...company, isActive: !currentStatus };
+          }
+          return company;
+        }));
+        toast.success(`${!currentStatus ? 'Activated' : 'Paused'} successfully`);
       }
-      return company;
-    });
-    saveCompanies(updatedCompanies);
+    } catch (error) {
+      console.error('Error toggling company status:', error);
+    }
   };
 
-  const handleAddCompany = () => {
+  const handleAddCompany = async () => {
     if (!newCompany.name || !newCompany.email || !newCompany.password) {
       toast.error('All fields are required');
       return;
     }
 
-    const newCompanyEntry: TransportCompany = {
-      id: Date.now().toString(),
-      name: newCompany.name,
-      email: newCompany.email,
-      isActive: true,
-      createdAt: new Date()
-    };
-
-    // In a real app, we'd hash the password and store it securely
-    // For demo purposes, we're storing user credentials separately
-    const userCredentials = {
-      email: newCompany.email,
-      password: newCompany.password,
-      companyId: newCompanyEntry.id
-    };
-    
-    const userCredentialsArray = JSON.parse(localStorage.getItem('userCredentials') || '[]');
-    userCredentialsArray.push(userCredentials);
-    localStorage.setItem('userCredentials', JSON.stringify(userCredentialsArray));
-    
-    const updatedCompanies = [...companies, newCompanyEntry];
-    saveCompanies(updatedCompanies);
-    
-    setNewCompany({ name: '', email: '', password: '' });
-    setIsAddDialogOpen(false);
-    toast.success('Transport company added successfully');
+    try {
+      setIsLoading(true);
+      
+      const newCompanyEntry: TransportCompany = {
+        id: '',
+        name: newCompany.name,
+        email: newCompany.email,
+        isActive: true,
+        createdAt: new Date()
+      };
+      
+      const createdCompany = await createTransportCompany(newCompanyEntry);
+      
+      if (createdCompany) {
+        // In a real app, we'd hash the password and store it securely
+        // For demo purposes, we're storing user credentials separately
+        const userCredentials = {
+          email: newCompany.email,
+          password: newCompany.password,
+          companyId: createdCompany.id
+        };
+        
+        const userCredentialsArray = JSON.parse(localStorage.getItem('userCredentials') || '[]');
+        userCredentialsArray.push(userCredentials);
+        localStorage.setItem('userCredentials', JSON.stringify(userCredentialsArray));
+        
+        setCompanies([createdCompany, ...companies]);
+        setNewCompany({ name: '', email: '', password: '' });
+        setIsAddDialogOpen(false);
+      }
+    } catch (error) {
+      console.error('Error adding company:', error);
+      toast.error('Failed to add transport company');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  const handleEditCompany = () => {
+  const handleEditCompany = async () => {
     if (!editingCompany || !editingCompany.name || !editingCompany.email) {
       toast.error('Name and email are required');
       return;
     }
 
-    const updatedCompanies = companies.map(company => {
-      if (company.id === editingCompany.id) {
-        return editingCompany;
+    try {
+      setIsLoading(true);
+      const success = await updateTransportCompany(editingCompany);
+      
+      if (success) {
+        setCompanies(companies.map(company => {
+          if (company.id === editingCompany.id) {
+            return editingCompany;
+          }
+          return company;
+        }));
+        
+        setIsEditDialogOpen(false);
+        setEditingCompany(null);
       }
-      return company;
-    });
-
-    saveCompanies(updatedCompanies);
-    setIsEditDialogOpen(false);
-    setEditingCompany(null);
-    toast.success('Transport company updated successfully');
+    } catch (error) {
+      console.error('Error updating company:', error);
+      toast.error('Failed to update transport company');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  const handleDeleteCompany = (id: string) => {
+  const handleDeleteCompany = async (id: string) => {
     const companyToDelete = companies.find(company => company.id === id);
     if (!companyToDelete) return;
 
     if (confirm(`Are you sure you want to delete ${companyToDelete.name}?`)) {
-      const updatedCompanies = companies.filter(company => company.id !== id);
-      saveCompanies(updatedCompanies);
-      
-      // Also remove user credentials
-      const userCredentialsArray = JSON.parse(localStorage.getItem('userCredentials') || '[]');
-      const updatedCredentials = userCredentialsArray.filter((cred: any) => cred.companyId !== id);
-      localStorage.setItem('userCredentials', JSON.stringify(updatedCredentials));
-      
-      toast.success('Transport company deleted successfully');
+      try {
+        setIsLoading(true);
+        const success = await deleteTransportCompany(id);
+        
+        if (success) {
+          setCompanies(companies.filter(company => company.id !== id));
+          
+          // Also remove user credentials
+          const userCredentialsArray = JSON.parse(localStorage.getItem('userCredentials') || '[]');
+          const updatedCredentials = userCredentialsArray.filter((cred: any) => cred.companyId !== id);
+          localStorage.setItem('userCredentials', JSON.stringify(updatedCredentials));
+        }
+      } catch (error) {
+        console.error('Error deleting company:', error);
+        toast.error('Failed to delete transport company');
+      } finally {
+        setIsLoading(false);
+      }
     }
   };
 
@@ -239,7 +269,9 @@ const AdminDashboard = () => {
                 </div>
                 <DialogFooter>
                   <Button variant="outline" onClick={() => setIsAddDialogOpen(false)}>Cancel</Button>
-                  <Button onClick={handleAddCompany}>Add Company</Button>
+                  <Button onClick={handleAddCompany} disabled={isLoading}>
+                    {isLoading ? 'Adding...' : 'Add Company'}
+                  </Button>
                 </DialogFooter>
               </DialogContent>
             </Dialog>
@@ -277,7 +309,9 @@ const AdminDashboard = () => {
                 )}
                 <DialogFooter>
                   <Button variant="outline" onClick={() => setIsEditDialogOpen(false)}>Cancel</Button>
-                  <Button onClick={handleEditCompany}>Update Company</Button>
+                  <Button onClick={handleEditCompany} disabled={isLoading}>
+                    {isLoading ? 'Updating...' : 'Update Company'}
+                  </Button>
                 </DialogFooter>
               </DialogContent>
             </Dialog>
@@ -294,7 +328,13 @@ const AdminDashboard = () => {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {companies.length === 0 ? (
+                {isLoading ? (
+                  <TableRow>
+                    <TableCell colSpan={5} className="text-center py-8 text-muted-foreground">
+                      Loading transport companies...
+                    </TableCell>
+                  </TableRow>
+                ) : companies.length === 0 ? (
                   <TableRow>
                     <TableCell colSpan={5} className="text-center py-8 text-muted-foreground">
                       No transport companies added yet
@@ -344,7 +384,7 @@ const AdminDashboard = () => {
                             variant="outline" 
                             size="sm" 
                             className={`h-8 w-8 p-0 ${company.isActive ? 'text-amber-500 hover:text-amber-600' : 'text-green-500 hover:text-green-600'}`}
-                            onClick={() => handleToggleStatus(company.id)}
+                            onClick={() => handleToggleStatus(company.id, company.isActive)}
                           >
                             {company.isActive ? (
                               <PauseCircle className="h-4 w-4" />

@@ -1,11 +1,11 @@
-
 import { supabase } from "@/integrations/supabase/client";
-import { TransportEntry } from "@/types/transport";
+import { TransportEntry, TransportCompany } from "@/types/transport";
 import { toast } from "sonner";
 import { Database } from "@/integrations/supabase/types";
 
 // Define the type for database insert
 type TransportEntryInsert = Database['public']['Tables']['transport_entries']['Insert'];
+type TransportCompanyInsert = Database['public']['Tables']['transport_companies']['Insert'];
 
 // Transform date objects for Supabase (Date objects to ISO strings)
 const prepareEntryForDb = (entry: TransportEntry): TransportEntryInsert => {
@@ -45,6 +45,27 @@ const transformDbEntry = (entry: any): TransportEntry => {
     balanceStatus: entry.balance_status || "Pending",
     balanceDate: entry.balance_date ? new Date(entry.balance_date) : null,
     companyId: entry.company_id || null,
+  };
+};
+
+// Transform TransportCompany object for database
+const prepareCompanyForDb = (company: TransportCompany): TransportCompanyInsert => {
+  return {
+    name: company.name,
+    email: company.email,
+    is_active: company.isActive,
+    created_at: company.createdAt instanceof Date ? company.createdAt.toISOString() : new Date().toISOString()
+  };
+};
+
+// Transform database company to app format
+const transformDbCompany = (company: any): TransportCompany => {
+  return {
+    id: company.id,
+    name: company.name,
+    email: company.email,
+    isActive: company.is_active,
+    createdAt: company.created_at ? new Date(company.created_at) : new Date()
   };
 };
 
@@ -194,6 +215,146 @@ export const deleteTransportEntry = async (id: string): Promise<boolean> => {
   } catch (error) {
     console.error('Failed to delete entry:', error);
     toast.error('Failed to delete entry');
+    return false;
+  }
+};
+
+export const fetchTransportCompanies = async (): Promise<TransportCompany[]> => {
+  try {
+    console.log('Fetching transport companies from Supabase...');
+    
+    const { data, error } = await supabase
+      .from('transport_companies')
+      .select('*')
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      console.error('Error fetching companies:', error.message);
+      toast.error('Failed to load companies');
+      throw error;
+    }
+
+    if (!data || data.length === 0) {
+      console.log('No transport companies found');
+      return [];
+    }
+
+    console.log(`Successfully fetched ${data.length} transport companies`);
+    
+    return data.map(company => transformDbCompany(company));
+  } catch (error) {
+    console.error('Failed to fetch companies:', error);
+    toast.error('Failed to load companies');
+    return [];
+  }
+};
+
+export const createTransportCompany = async (company: TransportCompany): Promise<TransportCompany | null> => {
+  try {
+    console.log('Creating transport company:', company);
+    const preparedCompany = prepareCompanyForDb(company);
+    
+    const { data, error } = await supabase
+      .from('transport_companies')
+      .insert(preparedCompany)
+      .select()
+      .single();
+
+    if (error) {
+      console.error('Error creating company:', error.message);
+      toast.error('Failed to create company');
+      return null;
+    }
+
+    console.log('Company created successfully:', data);
+    toast.success('Company created successfully');
+    return transformDbCompany(data);
+  } catch (error) {
+    console.error('Failed to create company:', error);
+    toast.error('Failed to create company');
+    return null;
+  }
+};
+
+export const updateTransportCompany = async (company: TransportCompany): Promise<boolean> => {
+  try {
+    console.log('Updating transport company:', company);
+    
+    const { error } = await supabase
+      .from('transport_companies')
+      .update({
+        name: company.name,
+        email: company.email,
+        is_active: company.isActive,
+        updated_at: new Date().toISOString()
+      })
+      .eq('id', company.id);
+
+    if (error) {
+      console.error('Error updating company:', error.message);
+      toast.error('Failed to update company');
+      return false;
+    }
+
+    console.log('Company updated successfully');
+    toast.success('Company updated successfully');
+    return true;
+  } catch (error) {
+    console.error('Failed to update company:', error);
+    toast.error('Failed to update company');
+    return false;
+  }
+};
+
+export const deleteTransportCompany = async (id: string): Promise<boolean> => {
+  try {
+    console.log('Deleting transport company:', id);
+    
+    const { error } = await supabase
+      .from('transport_companies')
+      .delete()
+      .eq('id', id);
+
+    if (error) {
+      console.error('Error deleting company:', error.message);
+      toast.error('Failed to delete company');
+      return false;
+    }
+
+    console.log('Company deleted successfully');
+    toast.success('Company deleted successfully');
+    return true;
+  } catch (error) {
+    console.error('Failed to delete company:', error);
+    toast.error('Failed to delete company');
+    return false;
+  }
+};
+
+export const toggleTransportCompanyStatus = async (id: string, isActive: boolean): Promise<boolean> => {
+  try {
+    console.log(`${isActive ? 'Activating' : 'Deactivating'} transport company:`, id);
+    
+    const { error } = await supabase
+      .from('transport_companies')
+      .update({
+        is_active: isActive,
+        updated_at: new Date().toISOString()
+      })
+      .eq('id', id);
+
+    if (error) {
+      console.error('Error updating company status:', error.message);
+      toast.error(`Failed to ${isActive ? 'activate' : 'deactivate'} company`);
+      return false;
+    }
+
+    console.log('Company status updated successfully');
+    toast.success(`Company ${isActive ? 'activated' : 'deactivated'} successfully`);
+    return true;
+  } catch (error) {
+    console.error('Failed to update company status:', error);
+    toast.error(`Failed to ${isActive ? 'activate' : 'deactivate'} company`);
     return false;
   }
 };
