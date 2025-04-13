@@ -4,7 +4,7 @@ import { TransportEntry } from "@/types/transport";
 import { toast } from "sonner";
 
 // Transform date objects for Supabase (Date objects to ISO strings)
-const prepareEntryForDb = (entry: TransportEntry) => {
+const prepareEntryForDb = (entry: TransportEntry): Record<string, any> => {
   console.log('Preparing entry for database:', entry);
   return {
     ...entry,
@@ -125,7 +125,14 @@ export const createTransportEntry = async (entry: TransportEntry): Promise<Trans
     console.log('Creating transport entry for company:', companyId);
     const { id, ...entryData } = entry;
     const entryWithCompany = { ...entryData, companyId };
-    const preparedEntry = prepareEntryForDb(entryWithCompany as TransportEntry);
+    
+    // Fix: Create a new object and explicitly cast it to TransportEntry to avoid deep type instantiation
+    const entryWithCompanyFixed: TransportEntry = {
+      ...entryData,
+      companyId
+    } as TransportEntry;
+    
+    const preparedEntry = prepareEntryForDb(entryWithCompanyFixed);
     
     const { data, error } = await supabase
       .from('transport_entries')
