@@ -58,7 +58,7 @@ const App = () => {
             <Route 
               path="/verify-admin" 
               element={
-                <EmailVerification email="pratikgagurde35@gmail.com" />
+                <EmailVerification email="pratikgangurde35@gmail.com" />
               } 
             />
             
