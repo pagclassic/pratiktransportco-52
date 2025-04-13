@@ -1,38 +1,11 @@
 
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { 
-  Check, 
-  PauseCircle, 
-  PlayCircle, 
-  LogOut, 
-  Plus, 
-  Users, 
-  Truck,
-  Edit,
-  Trash2
-} from 'lucide-react';
+import { LogOut, Plus, Users } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { 
-  Dialog, 
-  DialogContent, 
-  DialogDescription, 
-  DialogFooter, 
-  DialogHeader, 
-  DialogTitle, 
-  DialogTrigger 
-} from '@/components/ui/dialog';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table';
+import { DialogTrigger } from '@/components/ui/dialog';
 import { TransportCompany } from '@/types/transport';
 import { 
   fetchTransportCompanies, 
@@ -41,6 +14,9 @@ import {
   deleteTransportCompany,
   toggleTransportCompanyStatus 
 } from '@/services/transportService';
+import CompanyTable from './companies/CompanyTable';
+import AddCompanyDialog from './companies/AddCompanyDialog';
+import EditCompanyDialog from './companies/EditCompanyDialog';
 
 const AdminDashboard = () => {
   const navigate = useNavigate();
@@ -95,6 +71,16 @@ const AdminDashboard = () => {
       }
     } catch (error) {
       console.error('Error toggling company status:', error);
+    }
+  };
+
+  const handleNewCompanyInputChange = (field: string, value: string) => {
+    setNewCompany({ ...newCompany, [field]: value });
+  };
+
+  const handleEditingCompanyInputChange = (field: string, value: string) => {
+    if (editingCompany) {
+      setEditingCompany({ ...editingCompany, [field]: value });
     }
   };
 
@@ -223,195 +209,45 @@ const AdminDashboard = () => {
               </CardTitle>
               <CardDescription>Add, edit, or pause transport companies</CardDescription>
             </div>
-            <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
-              <DialogTrigger asChild>
-                <Button className="gap-2">
-                  <Plus className="h-4 w-4" /> Add Company
-                </Button>
-              </DialogTrigger>
-              <DialogContent>
-                <DialogHeader>
-                  <DialogTitle>Add Transport Company</DialogTitle>
-                  <DialogDescription>
-                    Create a new transport company account
-                  </DialogDescription>
-                </DialogHeader>
-                <div className="space-y-4 py-4">
-                  <div className="space-y-2">
-                    <label htmlFor="name" className="text-sm font-medium">Company Name</label>
-                    <Input 
-                      id="name" 
-                      value={newCompany.name} 
-                      onChange={e => setNewCompany({...newCompany, name: e.target.value})} 
-                      placeholder="Transport Co. Name"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <label htmlFor="email" className="text-sm font-medium">Email</label>
-                    <Input 
-                      id="email" 
-                      type="email"
-                      value={newCompany.email} 
-                      onChange={e => setNewCompany({...newCompany, email: e.target.value})} 
-                      placeholder="email@example.com"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <label htmlFor="password" className="text-sm font-medium">Password</label>
-                    <Input 
-                      id="password" 
-                      type="password"
-                      value={newCompany.password} 
-                      onChange={e => setNewCompany({...newCompany, password: e.target.value})} 
-                      placeholder="••••••"
-                    />
-                  </div>
-                </div>
-                <DialogFooter>
-                  <Button variant="outline" onClick={() => setIsAddDialogOpen(false)}>Cancel</Button>
-                  <Button onClick={handleAddCompany} disabled={isLoading}>
-                    {isLoading ? 'Adding...' : 'Add Company'}
-                  </Button>
-                </DialogFooter>
-              </DialogContent>
-            </Dialog>
 
-            <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
-              <DialogContent>
-                <DialogHeader>
-                  <DialogTitle>Edit Transport Company</DialogTitle>
-                  <DialogDescription>
-                    Update transport company details
-                  </DialogDescription>
-                </DialogHeader>
-                {editingCompany && (
-                  <div className="space-y-4 py-4">
-                    <div className="space-y-2">
-                      <label htmlFor="edit-name" className="text-sm font-medium">Company Name</label>
-                      <Input 
-                        id="edit-name" 
-                        value={editingCompany.name} 
-                        onChange={e => setEditingCompany({...editingCompany, name: e.target.value})} 
-                        placeholder="Transport Co. Name"
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <label htmlFor="edit-email" className="text-sm font-medium">Email</label>
-                      <Input 
-                        id="edit-email" 
-                        type="email"
-                        value={editingCompany.email} 
-                        onChange={e => setEditingCompany({...editingCompany, email: e.target.value})} 
-                        placeholder="email@example.com"
-                      />
-                    </div>
-                  </div>
-                )}
-                <DialogFooter>
-                  <Button variant="outline" onClick={() => setIsEditDialogOpen(false)}>Cancel</Button>
-                  <Button onClick={handleEditCompany} disabled={isLoading}>
-                    {isLoading ? 'Updating...' : 'Update Company'}
-                  </Button>
-                </DialogFooter>
-              </DialogContent>
-            </Dialog>
+            <DialogTrigger asChild onClick={() => setIsAddDialogOpen(true)}>
+              <Button className="gap-2">
+                <Plus className="h-4 w-4" /> Add Company
+              </Button>
+            </DialogTrigger>
           </CardHeader>
           <CardContent className="p-6">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Company Name</TableHead>
-                  <TableHead>Email</TableHead>
-                  <TableHead>Created Date</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {isLoading ? (
-                  <TableRow>
-                    <TableCell colSpan={5} className="text-center py-8 text-muted-foreground">
-                      Loading transport companies...
-                    </TableCell>
-                  </TableRow>
-                ) : companies.length === 0 ? (
-                  <TableRow>
-                    <TableCell colSpan={5} className="text-center py-8 text-muted-foreground">
-                      No transport companies added yet
-                    </TableCell>
-                  </TableRow>
-                ) : (
-                  companies.map((company) => (
-                    <TableRow key={company.id}>
-                      <TableCell className="font-medium">
-                        <div className="flex items-center gap-2">
-                          <Truck className="h-4 w-4 text-muted-foreground" />
-                          {company.name}
-                        </div>
-                      </TableCell>
-                      <TableCell>{company.email}</TableCell>
-                      <TableCell>{new Date(company.createdAt).toLocaleDateString()}</TableCell>
-                      <TableCell>
-                        <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                          company.isActive ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
-                        }`}>
-                          {company.isActive ? (
-                            <>
-                              <Check className="h-3 w-3" /> Active
-                            </>
-                          ) : (
-                            <>
-                              <PauseCircle className="h-3 w-3" /> Paused
-                            </>
-                          )}
-                        </span>
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex items-center gap-2">
-                          <Button 
-                            variant="outline" 
-                            size="sm" 
-                            className="h-8 w-8 p-0"
-                            onClick={() => {
-                              setEditingCompany(company);
-                              setIsEditDialogOpen(true);
-                            }}
-                          >
-                            <Edit className="h-4 w-4" />
-                            <span className="sr-only">Edit</span>
-                          </Button>
-                          <Button 
-                            variant="outline" 
-                            size="sm" 
-                            className={`h-8 w-8 p-0 ${company.isActive ? 'text-amber-500 hover:text-amber-600' : 'text-green-500 hover:text-green-600'}`}
-                            onClick={() => handleToggleStatus(company.id, company.isActive)}
-                          >
-                            {company.isActive ? (
-                              <PauseCircle className="h-4 w-4" />
-                            ) : (
-                              <PlayCircle className="h-4 w-4" />
-                            )}
-                            <span className="sr-only">{company.isActive ? 'Pause' : 'Activate'}</span>
-                          </Button>
-                          <Button 
-                            variant="outline" 
-                            size="sm" 
-                            className="h-8 w-8 p-0 text-red-500 hover:text-red-600"
-                            onClick={() => handleDeleteCompany(company.id)}
-                          >
-                            <Trash2 className="h-4 w-4" />
-                            <span className="sr-only">Delete</span>
-                          </Button>
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  ))
-                )}
-              </TableBody>
-            </Table>
+            <CompanyTable 
+              companies={companies} 
+              isLoading={isLoading}
+              onEdit={(company) => {
+                setEditingCompany(company);
+                setIsEditDialogOpen(true);
+              }}
+              onToggleStatus={handleToggleStatus}
+              onDelete={handleDeleteCompany}
+            />
           </CardContent>
         </Card>
       </div>
+
+      <AddCompanyDialog 
+        isOpen={isAddDialogOpen}
+        onOpenChange={setIsAddDialogOpen}
+        newCompany={newCompany}
+        onInputChange={handleNewCompanyInputChange}
+        onSubmit={handleAddCompany}
+        isLoading={isLoading}
+      />
+
+      <EditCompanyDialog 
+        isOpen={isEditDialogOpen}
+        onOpenChange={setIsEditDialogOpen}
+        editingCompany={editingCompany}
+        onInputChange={handleEditingCompanyInputChange}
+        onSubmit={handleEditCompany}
+        isLoading={isLoading}
+      />
     </div>
   );
 };
