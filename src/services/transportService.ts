@@ -2,37 +2,28 @@
 import { supabase } from "@/integrations/supabase/client";
 import { TransportEntry } from "@/types/transport";
 import { toast } from "sonner";
+import { Database } from "@/integrations/supabase/types";
+
+// Define the type for database insert
+type TransportEntryInsert = Database['public']['Tables']['transport_entries']['Insert'];
 
 // Transform date objects for Supabase (Date objects to ISO strings)
-const prepareEntryForDb = (entry: TransportEntry): Record<string, any> => {
+const prepareEntryForDb = (entry: TransportEntry): TransportEntryInsert => {
   console.log('Preparing entry for database:', entry);
   return {
-    ...entry,
     date: entry.date instanceof Date ? entry.date.toISOString() : entry.date,
     advance_date: entry.advanceDate instanceof Date ? entry.advanceDate.toISOString() : entry.advanceDate,
     balance_date: entry.balanceDate instanceof Date ? entry.balanceDate.toISOString() : entry.balanceDate,
-    // Map to DB column names
     vehicle_number: entry.vehicleNumber,
     driver_name: entry.weight, // Use driver_name column for weight
     driver_mobile: entry.driverMobile,
     transport_name: entry.transportName,
+    place: entry.place,
     rent_amount: entry.rentAmount,
     advance_amount: entry.advanceAmount,
     advance_type: entry.advanceType,
     balance_status: entry.balanceStatus,
-    company_id: entry.companyId, // Add company_id field
-    // Remove JavaScript properties that don't exist in the DB
-    vehicleNumber: undefined,
-    weight: undefined,
-    driverMobile: undefined,
-    transportName: undefined,
-    rentAmount: undefined,
-    advanceAmount: undefined,
-    advanceDate: undefined,
-    advanceType: undefined,
-    balanceStatus: undefined,
-    balanceDate: undefined,
-    companyId: undefined
+    company_id: entry.companyId // Add company_id field
   };
 };
 
@@ -124,15 +115,16 @@ export const createTransportEntry = async (entry: TransportEntry): Promise<Trans
     
     console.log('Creating transport entry for company:', companyId);
     const { id, ...entryData } = entry;
-    const entryWithCompany = { ...entryData, companyId };
     
-    // Fix: Create a new object and explicitly cast it to TransportEntry to avoid deep type instantiation
-    const entryWithCompanyFixed: TransportEntry = {
+    // Create a complete entry object with company ID
+    const completeEntry: TransportEntry = {
       ...entryData,
-      companyId
-    } as TransportEntry;
+      id: id, // Maintain the ID
+      companyId: companyId
+    };
     
-    const preparedEntry = prepareEntryForDb(entryWithCompanyFixed);
+    // Convert to database format
+    const preparedEntry = prepareEntryForDb(completeEntry);
     
     const { data, error } = await supabase
       .from('transport_entries')
@@ -160,11 +152,10 @@ export const updateTransportEntry = async (entry: TransportEntry): Promise<boole
   try {
     console.log('Updating transport entry:', entry);
     const preparedEntry = prepareEntryForDb(entry);
-    const { id, ...updateData } = preparedEntry;
 
     const { error } = await supabase
       .from('transport_entries')
-      .update(updateData)
+      .update(preparedEntry)
       .eq('id', entry.id);
 
     if (error) {
