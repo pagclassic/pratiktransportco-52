@@ -1,5 +1,4 @@
-
-import React, { useEffect, useState } from "react";
+import React, { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import TransportEntries from "@/components/TransportEntries";
 import ReportsDashboard from "@/components/ReportsDashboard";
@@ -20,7 +19,6 @@ const Index = () => {
   const [companyName, setCompanyName] = useState<string>("Transport Dashboard");
   
   useEffect(() => {
-    // Check if user is logged in
     const userData = localStorage.getItem('currentUser');
     if (!userData) {
       navigate('/login');
@@ -41,7 +39,6 @@ const Index = () => {
     retry: 3,
   });
 
-  // Force refetch on component mount
   useEffect(() => {
     console.log("Index component mounted, refetching data...");
     refetch();
