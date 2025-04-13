@@ -3,7 +3,7 @@ export interface TransportEntry {
   id: string;
   date: Date;
   vehicleNumber: string;
-  weight: string; // Changed from driverName
+  weight: string;
   driverMobile: string;
   place: string;
   transportName: string;
@@ -13,4 +13,17 @@ export interface TransportEntry {
   advanceType: 'Cash' | 'Bank Transfer' | 'Check' | 'UPI';
   balanceStatus: 'PAID' | 'UNPAID' | 'PARTIAL';
   balanceDate: Date | null;
+}
+
+export interface TransportCompany {
+  id: string;
+  name: string;
+  email: string;
+  isActive: boolean;
+  createdAt: Date;
+}
+
+export interface Admin {
+  email: string;
+  isLoggedIn: boolean;
 }

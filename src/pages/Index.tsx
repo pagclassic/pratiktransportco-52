@@ -1,26 +1,43 @@
 
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import TransportEntries from "@/components/TransportEntries";
 import ReportsDashboard from "@/components/ReportsDashboard";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Truck } from "lucide-react";
+import { Truck, Loader2, LogOut } from "lucide-react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { fetchTransportEntries, deleteTransportEntry } from "@/services/transportService";
-import { Loader2 } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { TransportEntry } from "@/types/transport";
 import { useState } from "react";
 import { toast } from "sonner";
+import { Button } from "@/components/ui/button";
 
 const Index = () => {
+  const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [activeTab, setActiveTab] = useState<"entries" | "reports">("entries");
+  const [companyName, setCompanyName] = useState<string>("Transport Dashboard");
+  
+  useEffect(() => {
+    // Check if user is logged in
+    const userData = localStorage.getItem('currentUser');
+    if (!userData) {
+      navigate('/login');
+      return;
+    }
+    
+    const user = JSON.parse(userData);
+    if (user.companyName) {
+      setCompanyName(user.companyName);
+    }
+  }, [navigate]);
   
   const { data = [], isLoading, isError, error, refetch } = useQuery<TransportEntry[], Error>({
     queryKey: ['transportEntries'],
     queryFn: fetchTransportEntries,
     initialData: [],
-    staleTime: 1000 * 60, // 1 minute (reduced from 5 minutes for more frequent updates)
+    staleTime: 1000 * 60,
     retry: 3,
   });
 
@@ -47,17 +64,28 @@ const Index = () => {
     setActiveTab(value as "entries" | "reports");
   };
 
+  const handleLogout = () => {
+    localStorage.removeItem('currentUser');
+    toast.success('Logged out successfully');
+    navigate('/login');
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-50 to-slate-100 p-4 md:p-8">
       <div className="mx-auto max-w-5xl">
-        <header className="mb-8 flex items-center gap-3">
-          <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary/10">
-            <Truck className="h-6 w-6 text-primary" />
+        <header className="mb-8 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary/10">
+              <Truck className="h-6 w-6 text-primary" />
+            </div>
+            <div>
+              <h1 className="text-3xl md:text-4xl font-bold text-slate-800 mb-1">{companyName}</h1>
+              <p className="text-slate-500">Manage your transport entries and track payments</p>
+            </div>
           </div>
-          <div>
-            <h1 className="text-3xl md:text-4xl font-bold text-slate-800 mb-1">Pratik Transport Co</h1>
-            <p className="text-slate-500">Manage your transport entries and track payments</p>
-          </div>
+          <Button variant="outline" className="gap-2" onClick={handleLogout}>
+            <LogOut className="h-4 w-4" /> Logout
+          </Button>
         </header>
 
         <Card className="border-none shadow-lg animate-in">

@@ -65,7 +65,7 @@ const ReportsDashboard = ({ entries }: ReportsDashboardProps) => {
       ? filteredEntries.reduce((sum, entry) => sum + entry.rentAmount, 0) / filteredEntries.length 
       : 0,
     uniqueVehicles: new Set(filteredEntries.map(entry => entry.vehicleNumber)).size,
-    uniqueDrivers: new Set(filteredEntries.map(entry => entry.driverName)).size,
+    uniqueDrivers: new Set(filteredEntries.map(entry => entry.weight)).size,
   };
 
   // Calculate monthly statistics
@@ -297,4 +297,4 @@ const ReportsDashboard = ({ entries }: ReportsDashboardProps) => {
   );
 };
 
-export default ReportsDashboard; 
+export default ReportsDashboard;
