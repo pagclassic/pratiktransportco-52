@@ -9,7 +9,63 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never
+      transport_entries: {
+        Row: {
+          advance_amount: number | null
+          advance_date: string | null
+          advance_type: string | null
+          balance_date: string | null
+          balance_status: string | null
+          company_id: string | null
+          created_at: string | null
+          date: string
+          driver_mobile: string | null
+          driver_name: string | null
+          id: string
+          place: string | null
+          rent_amount: number | null
+          transport_name: string | null
+          updated_at: string | null
+          vehicle_number: string
+        }
+        Insert: {
+          advance_amount?: number | null
+          advance_date?: string | null
+          advance_type?: string | null
+          balance_date?: string | null
+          balance_status?: string | null
+          company_id?: string | null
+          created_at?: string | null
+          date: string
+          driver_mobile?: string | null
+          driver_name?: string | null
+          id?: string
+          place?: string | null
+          rent_amount?: number | null
+          transport_name?: string | null
+          updated_at?: string | null
+          vehicle_number: string
+        }
+        Update: {
+          advance_amount?: number | null
+          advance_date?: string | null
+          advance_type?: string | null
+          balance_date?: string | null
+          balance_status?: string | null
+          company_id?: string | null
+          created_at?: string | null
+          date?: string
+          driver_mobile?: string | null
+          driver_name?: string | null
+          id?: string
+          place?: string | null
+          rent_amount?: number | null
+          transport_name?: string | null
+          updated_at?: string | null
+          vehicle_number?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
