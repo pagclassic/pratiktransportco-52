@@ -37,8 +37,12 @@ const UserLogin = () => {
   const onSubmit = (values: FormValues) => {
     setIsLoading(true);
     
+    console.log("Login attempt:", values.email, "Password length:", values.password.length);
+    console.log("Admin email:", ADMIN_EMAIL, "Admin password length:", ADMIN_PASSWORD.length);
+    
     // Check if it's an admin login attempt
-    if (values.email === ADMIN_EMAIL && values.password === ADMIN_PASSWORD) {
+    if (values.email.trim() === ADMIN_EMAIL && values.password === ADMIN_PASSWORD) {
+      console.log("Admin login successful");
       // For admin login, redirect to email verification
       setTimeout(() => {
         setIsLoading(false);
