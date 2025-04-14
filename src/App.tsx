@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
@@ -22,7 +21,6 @@ const queryClient = new QueryClient({
   },
 });
 
-// Auth guard for routes that require authentication
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const isLoggedIn = localStorage.getItem('currentUser');
   
@@ -33,7 +31,6 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   return <>{children}</>;
 };
 
-// Admin route guard
 const AdminRoute = ({ children }: { children: React.ReactNode }) => {
   const adminData = localStorage.getItem('admin');
   const isAdmin = adminData && JSON.parse(adminData).isLoggedIn;
@@ -53,7 +50,6 @@ const App = () => {
         <Sonner />
         <BrowserRouter>
           <Routes>
-            {/* Public routes */}
             <Route path="/login" element={<UserLogin />} />
             <Route 
               path="/verify-admin" 
@@ -62,7 +58,6 @@ const App = () => {
               } 
             />
             
-            {/* Protected routes */}
             <Route path="/" element={
               <ProtectedRoute>
                 <Index />
@@ -79,14 +74,12 @@ const App = () => {
               </ProtectedRoute>
             } />
             
-            {/* Admin routes */}
             <Route path="/admin/dashboard" element={
               <AdminRoute>
                 <AdminDashboard />
               </AdminRoute>
             } />
             
-            {/* Fallback route */}
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>

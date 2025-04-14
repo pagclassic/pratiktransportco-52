@@ -12,7 +12,7 @@ import { Button } from "@/components/ui/button";
 import { User } from "lucide-react";
 
 // Admin credentials
-const ADMIN_EMAIL = "pratikgagurde35@gmail.com";
+const ADMIN_EMAIL = "pratikgangurde35@gmail.com";
 const ADMIN_PASSWORD = "Pratik121ff@ybl";
 
 const formSchema = z.object({
