@@ -5,7 +5,7 @@ import { LogOut, Plus, Users } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { DialogTrigger } from '@/components/ui/dialog';
+import { Dialog, DialogTrigger } from '@/components/ui/dialog';
 import { TransportCompany } from '@/types/transport';
 import { 
   fetchTransportCompanies, 
@@ -210,11 +210,14 @@ const AdminDashboard = () => {
               <CardDescription>Add, edit, or pause transport companies</CardDescription>
             </div>
 
-            <DialogTrigger asChild onClick={() => setIsAddDialogOpen(true)}>
-              <Button className="gap-2">
-                <Plus className="h-4 w-4" /> Add Company
-              </Button>
-            </DialogTrigger>
+            {/* Wrap DialogTrigger with Dialog component */}
+            <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
+              <DialogTrigger asChild>
+                <Button className="gap-2">
+                  <Plus className="h-4 w-4" /> Add Company
+                </Button>
+              </DialogTrigger>
+            </Dialog>
           </CardHeader>
           <CardContent className="p-6">
             <CompanyTable 
