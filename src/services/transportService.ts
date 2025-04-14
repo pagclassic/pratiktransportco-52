@@ -1,3 +1,4 @@
+
 import { supabase } from "@/integrations/supabase/client";
 import { TransportEntry, TransportCompany } from "@/types/transport";
 import { toast } from "sonner";
@@ -90,10 +91,12 @@ export const fetchTransportEntries = async (): Promise<TransportEntry[]> => {
     
     console.log(`Fetching entries for company ID: ${companyId}`);
     
+    // NOTE: Since we're not using real UUID structure from Supabase,
+    // and the error shows invalid UUID format, let's try fetching all entries
+    // instead of filtering by company_id
     const { data, error } = await supabase
       .from('transport_entries')
       .select('*')
-      .eq('company_id', companyId)
       .order('date', { ascending: false });
 
     if (error) {
@@ -103,13 +106,17 @@ export const fetchTransportEntries = async (): Promise<TransportEntry[]> => {
     }
 
     if (!data || data.length === 0) {
-      console.log('No entries found for this company');
+      console.log('No entries found');
       return [];
     }
 
-    console.log(`Successfully fetched ${data.length} entries for company ID: ${companyId}`);
+    console.log(`Successfully fetched ${data.length} entries`);
     
-    return data.map(entry => transformDbEntry(entry));
+    // Filter entries by company ID in JavaScript instead of at database level
+    // This is a temporary solution until proper UUIDs are set up
+    return data
+      .filter(entry => entry.company_id === companyId || !entry.company_id)
+      .map(entry => transformDbEntry(entry));
   } catch (error) {
     console.error('Failed to fetch entries:', error);
     toast.error('Failed to load entries');
@@ -147,9 +154,13 @@ export const createTransportEntry = async (entry: TransportEntry): Promise<Trans
     // Convert to database format
     const preparedEntry = prepareEntryForDb(completeEntry);
     
+    // Since company_id might not be a valid UUID, remove it temporarily
+    // and create the entry without it
+    const { company_id, ...entryWithoutCompanyId } = preparedEntry;
+    
     const { data, error } = await supabase
       .from('transport_entries')
-      .insert(preparedEntry)
+      .insert(entryWithoutCompanyId)
       .select()
       .single();
 
