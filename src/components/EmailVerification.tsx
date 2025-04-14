@@ -3,14 +3,13 @@ import React, { useState } from 'react';
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { toast } from "sonner";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Button } from "@/components/ui/button";
 import { ShieldCheck } from "lucide-react";
 import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
-import { supabase } from "@/integrations/supabase/client";
 
 // For demonstration, we're using a hard-coded verification code
 // In a real app, this would be sent via email and verified on the server
@@ -24,6 +23,7 @@ type FormValues = z.infer<typeof formSchema>;
 
 const EmailVerification = ({ email }: { email: string }) => {
   const navigate = useNavigate();
+  const location = useLocation();
   const [isLoading, setIsLoading] = useState(false);
 
   const form = useForm<FormValues>({
@@ -44,6 +44,8 @@ const EmailVerification = ({ email }: { email: string }) => {
       const isValid = values.code === ADMIN_VERIFICATION_CODE;
       
       if (isValid) {
+        console.log("Verification successful, redirecting to admin dashboard");
+        
         // Set admin in localStorage
         localStorage.setItem("admin", JSON.stringify({ 
           email: email, 
@@ -51,7 +53,11 @@ const EmailVerification = ({ email }: { email: string }) => {
         }));
         
         toast.success("Verification successful");
-        navigate("/admin/dashboard");
+        
+        // Make sure we navigate to the correct route
+        setTimeout(() => {
+          navigate("/admin/dashboard");
+        }, 500);
       } else {
         toast.error("Invalid verification code");
       }

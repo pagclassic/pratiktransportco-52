@@ -1,4 +1,5 @@
-import React from 'react';
+
+import React, { useEffect } from 'react';
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -33,7 +34,11 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
 
 const AdminRoute = ({ children }: { children: React.ReactNode }) => {
   const adminData = localStorage.getItem('admin');
-  const isAdmin = adminData && JSON.parse(adminData).isLoggedIn;
+  
+  // Improved admin verification check
+  const isAdmin = adminData ? JSON.parse(adminData).isLoggedIn === true : false;
+  
+  console.log("AdminRoute check:", { adminData, isAdmin });
   
   if (!isAdmin) {
     return <Navigate to="/login" replace />;
@@ -43,6 +48,12 @@ const AdminRoute = ({ children }: { children: React.ReactNode }) => {
 };
 
 const App = () => {
+  // Clear console on app start to help with debugging
+  useEffect(() => {
+    console.clear();
+    console.log("App initialized");
+  }, []);
+
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
@@ -74,6 +85,7 @@ const App = () => {
               </ProtectedRoute>
             } />
             
+            {/* Improved AdminRoute handling */}
             <Route path="/admin/dashboard" element={
               <AdminRoute>
                 <AdminDashboard />
