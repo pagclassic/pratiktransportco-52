@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
@@ -36,10 +37,8 @@ const UserLogin = () => {
   const onSubmit = (values: FormValues) => {
     setIsLoading(true);
     
-    console.log("Login attempt for:", values.email);
-    
+    // Check for admin login first
     if (values.email.trim() === ADMIN_EMAIL && values.password === ADMIN_PASSWORD) {
-      console.log("Admin login successful");
       setTimeout(() => {
         setIsLoading(false);
         navigate("/verify-admin", { state: { email: values.email } });
@@ -47,18 +46,17 @@ const UserLogin = () => {
       return;
     }
     
+    // Get user credentials from localStorage
     const userCredentials = JSON.parse(localStorage.getItem('userCredentials') || '[]');
-    console.log("Available users:", userCredentials.map((u: any) => ({ email: u.email, companyId: u.companyId })));
-    
-    const user = userCredentials.find((user: any) => 
-      user.email === values.email && user.password === values.password
-    );
-    
     const companies = JSON.parse(localStorage.getItem('transportCompanies') || '[]');
+    
+    // Find user with matching credentials
+    const user = userCredentials.find((u: any) => 
+      u.email === values.email && u.password === values.password
+    );
     
     setTimeout(() => {
       if (user) {
-        console.log("User found, checking company...");
         const company = companies.find((c: any) => c.id === user.companyId);
         
         if (!company) {
@@ -82,8 +80,7 @@ const UserLogin = () => {
         toast.success("Login successful");
         navigate("/");
       } else {
-        console.log("Invalid credentials - user not found");
-        toast.error("Invalid credentials");
+        toast.error("Invalid credentials. Please check your email and password.");
       }
       setIsLoading(false);
     }, 1000);
