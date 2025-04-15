@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 import TransportEntries from "@/components/TransportEntries";
 import ReportsDashboard from "@/components/ReportsDashboard";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Truck, Loader2, LogOut } from "lucide-react";
+import { Truck, Loader2, LogOut, AlertCircle } from "lucide-react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { fetchTransportEntries, deleteTransportEntry } from "@/services/transportService";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
