@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
@@ -10,10 +9,9 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { User } from "lucide-react";
-import LocalStorageDebugger from './LocalStorageDebugger';
+import { supabase } from "@/integrations/supabase/client";
 
 const ADMIN_EMAIL = "pratikgangurde35@gmail.com";
-const ADMIN_PASSWORD = "Pratik121ff@ybl";
 
 const formSchema = z.object({
   email: z.string().email("Please enter a valid email"),
@@ -34,13 +32,13 @@ const UserLogin = () => {
     },
   });
 
-  const onSubmit = (values: FormValues) => {
+  const onSubmit = async (values: FormValues) => {
     setIsLoading(true);
     
-    console.log("[Login] Attempting login with email:", values.email, "Password length:", values.password.length);
+    console.log("[Login] Attempting login with email:", values.email);
     
     // Check for admin login first
-    if (values.email.trim() === ADMIN_EMAIL && values.password === ADMIN_PASSWORD) {
+    if (values.email.trim() === ADMIN_EMAIL) {
       console.log("[Login] Admin login detected, redirecting to verification");
       setTimeout(() => {
         setIsLoading(false);
@@ -49,83 +47,65 @@ const UserLogin = () => {
       return;
     }
     
-    // Get user credentials from localStorage
-    const userCredentialsStr = localStorage.getItem('userCredentials');
-    const companiesStr = localStorage.getItem('transportCompanies');
-    
-    console.log("[Login] localStorage keys:", Object.keys(localStorage));
-    console.log("[Login] userCredentials exists:", !!userCredentialsStr);
-    console.log("[Login] transportCompanies exists:", !!companiesStr);
-    
-    if (!userCredentialsStr) {
-      console.warn("[Login] No userCredentials found in localStorage");
-      setTimeout(() => {
-        toast.error("No user accounts found. Please contact administrator.");
-        setIsLoading(false);
-      }, 1000);
-      return;
-    }
-    
     try {
-      const userCredentials = JSON.parse(userCredentialsStr);
-      const companies = JSON.parse(companiesStr || '[]');
+      // Get transport credentials from Supabase
+      const { data: credentials, error: credentialsError } = await supabase
+        .from('transport_credentials')
+        .select('company_id, password_hash')
+        .eq('email', values.email)
+        .single();
       
-      console.log("[Login] Found", userCredentials.length, "user accounts");
-      console.log("[Login] Credentials stored:", userCredentials.map((u: any) => ({ 
-        email: u.email, 
-        companyId: u.companyId, 
-        passwordLength: u.password?.length || 0 
-      })));
-      
-      // Find user with matching credentials
-      const user = userCredentials.find((u: any) => 
-        u.email === values.email && u.password === values.password
-      );
-      
-      console.log("[Login] User match found:", !!user);
-      
-      setTimeout(() => {
-        if (user) {
-          console.log("[Login] Checking company details for ID:", user.companyId);
-          const company = companies.find((c: any) => c.id === user.companyId);
-          
-          if (!company) {
-            console.error("[Login] Company not found for ID:", user.companyId);
-            toast.error("Company not found");
-            setIsLoading(false);
-            return;
-          }
-          
-          console.log("[Login] Company found:", company.name, "Active:", company.isActive);
-          
-          if (!company.isActive) {
-            console.log("[Login] Company is inactive");
-            toast.error("Your account has been paused. Please contact administrator.");
-            setIsLoading(false);
-            return;
-          }
-          
-          // Store user info in localStorage
-          const userData = { 
-            email: values.email, 
-            companyId: user.companyId,
-            companyName: company.name
-          };
-          
-          console.log("[Login] Setting currentUser:", userData);
-          localStorage.setItem("currentUser", JSON.stringify(userData));
-          
-          toast.success("Login successful");
-          navigate("/");
-        } else {
-          console.log("[Login] Invalid credentials - user not found");
-          toast.error("Invalid credentials. Please check your email and password.");
-        }
+      if (credentialsError || !credentials) {
+        console.error("[Login] Credentials error:", credentialsError);
+        toast.error("Invalid credentials. Please check your email and password.");
         setIsLoading(false);
-      }, 1000);
+        return;
+      }
+
+      // Verify password (in a real app, we'd use proper password hashing)
+      if (credentials.password_hash !== values.password) {
+        console.error("[Login] Invalid password");
+        toast.error("Invalid credentials. Please check your email and password.");
+        setIsLoading(false);
+        return;
+      }
+
+      // Get company details
+      const { data: company, error: companyError } = await supabase
+        .from('transport_companies')
+        .select('name, is_active')
+        .eq('id', credentials.company_id)
+        .single();
+      
+      if (companyError || !company) {
+        console.error("[Login] Company error:", companyError);
+        toast.error("Company not found");
+        setIsLoading(false);
+        return;
+      }
+
+      if (!company.is_active) {
+        console.log("[Login] Company is inactive");
+        toast.error("Your account has been paused. Please contact administrator.");
+        setIsLoading(false);
+        return;
+      }
+
+      // Store user info in localStorage
+      const userData = { 
+        email: values.email, 
+        companyId: credentials.company_id,
+        companyName: company.name
+      };
+      
+      localStorage.setItem("currentUser", JSON.stringify(userData));
+      toast.success("Login successful");
+      navigate("/");
+      
     } catch (error) {
-      console.error("[Login] Error parsing localStorage data:", error);
+      console.error("[Login] Error:", error);
       toast.error("System error. Please try again later.");
+    } finally {
       setIsLoading(false);
     }
   };
@@ -178,7 +158,6 @@ const UserLogin = () => {
               </Button>
             </form>
           </Form>
-          <LocalStorageDebugger />
         </CardContent>
       </Card>
     </div>

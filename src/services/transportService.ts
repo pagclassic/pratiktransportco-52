@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { TransportEntry, TransportCompany } from "@/types/transport";
 import { toast } from "sonner";
@@ -278,7 +277,6 @@ export const createTransportCompany = async (company: TransportCompany): Promise
     }
 
     console.log('Company created successfully:', data);
-    toast.success('Company created successfully');
     return transformDbCompany(data);
   } catch (error) {
     console.error('Failed to create company:', error);

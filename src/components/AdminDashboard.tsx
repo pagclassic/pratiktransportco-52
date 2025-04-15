@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { LogOut, Plus, Users } from 'lucide-react';
@@ -28,7 +27,6 @@ const AdminDashboard = () => {
   const [editingCompany, setEditingCompany] = useState<TransportCompany | null>(null);
   
   useEffect(() => {
-    // Check if admin is logged in
     const adminData = localStorage.getItem('admin');
     if (!adminData || !JSON.parse(adminData).isLoggedIn) {
       navigate('/admin');
@@ -104,21 +102,25 @@ const AdminDashboard = () => {
       const createdCompany = await createTransportCompany(newCompanyEntry);
       
       if (createdCompany) {
-        // In a real app, we'd hash the password and store it securely
-        // For demo purposes, we're storing user credentials separately
-        const userCredentials = {
-          email: newCompany.email,
-          password: newCompany.password,
-          companyId: createdCompany.id
-        };
-        
-        const userCredentialsArray = JSON.parse(localStorage.getItem('userCredentials') || '[]');
-        userCredentialsArray.push(userCredentials);
-        localStorage.setItem('userCredentials', JSON.stringify(userCredentialsArray));
+        const { error: credentialsError } = await supabase
+          .from('transport_credentials')
+          .insert({
+            company_id: createdCompany.id,
+            email: newCompany.email,
+            password_hash: newCompany.password
+          });
+
+        if (credentialsError) {
+          console.error('Error creating credentials:', credentialsError);
+          toast.error('Failed to create transport credentials');
+          await deleteTransportCompany(createdCompany.id);
+          return;
+        }
         
         setCompanies([createdCompany, ...companies]);
         setNewCompany({ name: '', email: '', password: '' });
         setIsAddDialogOpen(false);
+        toast.success('Company added successfully');
       }
     } catch (error) {
       console.error('Error adding company:', error);
@@ -164,15 +166,12 @@ const AdminDashboard = () => {
     if (confirm(`Are you sure you want to delete ${companyToDelete.name}?`)) {
       try {
         setIsLoading(true);
+        
         const success = await deleteTransportCompany(id);
         
         if (success) {
           setCompanies(companies.filter(company => company.id !== id));
-          
-          // Also remove user credentials
-          const userCredentialsArray = JSON.parse(localStorage.getItem('userCredentials') || '[]');
-          const updatedCredentials = userCredentialsArray.filter((cred: any) => cred.companyId !== id);
-          localStorage.setItem('userCredentials', JSON.stringify(updatedCredentials));
+          toast.success('Company deleted successfully');
         }
       } catch (error) {
         console.error('Error deleting company:', error);
@@ -210,7 +209,6 @@ const AdminDashboard = () => {
               <CardDescription>Add, edit, or pause transport companies</CardDescription>
             </div>
 
-            {/* Wrap DialogTrigger with Dialog component */}
             <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
               <DialogTrigger asChild>
                 <Button className="gap-2">
