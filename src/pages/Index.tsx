@@ -17,6 +17,7 @@ const Index = () => {
   const queryClient = useQueryClient();
   const [activeTab, setActiveTab] = useState<"entries" | "reports">("entries");
   const [companyName, setCompanyName] = useState<string>("Transport Dashboard");
+  const [isServicePaused, setIsServicePaused] = useState(false);
   
   useEffect(() => {
     const userData = localStorage.getItem('currentUser');
@@ -28,6 +29,13 @@ const Index = () => {
     const user = JSON.parse(userData);
     if (user.companyName) {
       setCompanyName(user.companyName);
+    }
+
+    // Check company status
+    const companies = JSON.parse(localStorage.getItem('transportCompanies') || '[]');
+    const userCompany = companies.find((company: any) => company.id === user.companyId);
+    if (userCompany && !userCompany.isActive) {
+      setIsServicePaused(true);
     }
   }, [navigate]);
   
@@ -69,6 +77,27 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-50 to-slate-100 p-4 md:p-8">
+      {isServicePaused && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center">
+          <div className="bg-white p-6 rounded-lg shadow-xl max-w-md mx-4 relative">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-12 h-12 rounded-full bg-red-100 flex items-center justify-center">
+                <AlertCircle className="w-6 h-6 text-red-600" />
+              </div>
+              <div>
+                <h3 className="text-lg font-semibold text-red-600">Service Paused</h3>
+                <p className="text-gray-600">
+                  Your transport service has been paused by the administrator. Please contact the administrator to renew your service and make the necessary payment to continue using the platform.
+                </p>
+              </div>
+            </div>
+            <div className="mt-4 text-sm text-gray-500">
+              For immediate assistance, please reach out to your administrator.
+            </div>
+          </div>
+        </div>
+      )}
+      
       <div className="mx-auto max-w-5xl">
         <header className="mb-8 flex items-center justify-between">
           <div className="flex items-center gap-3">
