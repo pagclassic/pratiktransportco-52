@@ -9,8 +9,8 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { User } from "lucide-react";
+import LocalStorageDebugger from './LocalStorageDebugger';
 
-// Admin credentials - stored in a more secure way
 const ADMIN_EMAIL = "pratikgangurde35@gmail.com";
 const ADMIN_PASSWORD = "Pratik121ff@ybl";
 
@@ -36,13 +36,10 @@ const UserLogin = () => {
   const onSubmit = (values: FormValues) => {
     setIsLoading(true);
     
-    // Only log the attempt without showing credentials
     console.log("Login attempt for:", values.email);
     
-    // Check if it's an admin login attempt
     if (values.email.trim() === ADMIN_EMAIL && values.password === ADMIN_PASSWORD) {
       console.log("Admin login successful");
-      // For admin login, redirect to email verification
       setTimeout(() => {
         setIsLoading(false);
         navigate("/verify-admin", { state: { email: values.email } });
@@ -50,18 +47,13 @@ const UserLogin = () => {
       return;
     }
     
-    // Regular user login
-    // Get user credentials from localStorage
     const userCredentials = JSON.parse(localStorage.getItem('userCredentials') || '[]');
-    
-    // Debug user credentials without exposing passwords
     console.log("Available users:", userCredentials.map((u: any) => ({ email: u.email, companyId: u.companyId })));
     
     const user = userCredentials.find((user: any) => 
       user.email === values.email && user.password === values.password
     );
     
-    // Get companies to check if the user's company is active
     const companies = JSON.parse(localStorage.getItem('transportCompanies') || '[]');
     
     setTimeout(() => {
@@ -81,7 +73,6 @@ const UserLogin = () => {
           return;
         }
         
-        // Set user in localStorage
         localStorage.setItem("currentUser", JSON.stringify({ 
           email: values.email, 
           companyId: user.companyId,
@@ -146,8 +137,6 @@ const UserLogin = () => {
               </Button>
             </form>
           </Form>
-          
-          {/* Debug tool to help diagnose login issues */}
           <LocalStorageDebugger />
         </CardContent>
       </Card>
