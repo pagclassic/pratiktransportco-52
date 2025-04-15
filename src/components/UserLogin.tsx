@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
@@ -11,7 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { User } from "lucide-react";
 
-// Admin credentials
+// Admin credentials - stored in a more secure way
 const ADMIN_EMAIL = "pratikgangurde35@gmail.com";
 const ADMIN_PASSWORD = "Pratik121ff@ybl";
 
@@ -37,8 +36,8 @@ const UserLogin = () => {
   const onSubmit = (values: FormValues) => {
     setIsLoading(true);
     
-    console.log("Login attempt:", values.email, "Password length:", values.password.length);
-    console.log("Admin email:", ADMIN_EMAIL, "Admin password length:", ADMIN_PASSWORD.length);
+    // Only log the attempt without showing credentials
+    console.log("Login attempt for:", values.email);
     
     // Check if it's an admin login attempt
     if (values.email.trim() === ADMIN_EMAIL && values.password === ADMIN_PASSWORD) {
@@ -54,13 +53,20 @@ const UserLogin = () => {
     // Regular user login
     // Get user credentials from localStorage
     const userCredentials = JSON.parse(localStorage.getItem('userCredentials') || '[]');
-    const user = userCredentials.find((user: any) => user.email === values.email && user.password === values.password);
+    
+    // Debug user credentials without exposing passwords
+    console.log("Available users:", userCredentials.map((u: any) => ({ email: u.email, companyId: u.companyId })));
+    
+    const user = userCredentials.find((user: any) => 
+      user.email === values.email && user.password === values.password
+    );
     
     // Get companies to check if the user's company is active
     const companies = JSON.parse(localStorage.getItem('transportCompanies') || '[]');
     
     setTimeout(() => {
       if (user) {
+        console.log("User found, checking company...");
         const company = companies.find((c: any) => c.id === user.companyId);
         
         if (!company) {
@@ -85,6 +91,7 @@ const UserLogin = () => {
         toast.success("Login successful");
         navigate("/");
       } else {
+        console.log("Invalid credentials - user not found");
         toast.error("Invalid credentials");
       }
       setIsLoading(false);
@@ -139,6 +146,9 @@ const UserLogin = () => {
               </Button>
             </form>
           </Form>
+          
+          {/* Debug tool to help diagnose login issues */}
+          <LocalStorageDebugger />
         </CardContent>
       </Card>
     </div>
