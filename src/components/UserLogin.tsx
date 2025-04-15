@@ -37,8 +37,11 @@ const UserLogin = () => {
   const onSubmit = (values: FormValues) => {
     setIsLoading(true);
     
+    console.log("[Login] Attempting login with email:", values.email, "Password length:", values.password.length);
+    
     // Check for admin login first
     if (values.email.trim() === ADMIN_EMAIL && values.password === ADMIN_PASSWORD) {
+      console.log("[Login] Admin login detected, redirecting to verification");
       setTimeout(() => {
         setIsLoading(false);
         navigate("/verify-admin", { state: { email: values.email } });
@@ -47,43 +50,84 @@ const UserLogin = () => {
     }
     
     // Get user credentials from localStorage
-    const userCredentials = JSON.parse(localStorage.getItem('userCredentials') || '[]');
-    const companies = JSON.parse(localStorage.getItem('transportCompanies') || '[]');
+    const userCredentialsStr = localStorage.getItem('userCredentials');
+    const companiesStr = localStorage.getItem('transportCompanies');
     
-    // Find user with matching credentials
-    const user = userCredentials.find((u: any) => 
-      u.email === values.email && u.password === values.password
-    );
+    console.log("[Login] localStorage keys:", Object.keys(localStorage));
+    console.log("[Login] userCredentials exists:", !!userCredentialsStr);
+    console.log("[Login] transportCompanies exists:", !!companiesStr);
     
-    setTimeout(() => {
-      if (user) {
-        const company = companies.find((c: any) => c.id === user.companyId);
-        
-        if (!company) {
-          toast.error("Company not found");
-          setIsLoading(false);
-          return;
+    if (!userCredentialsStr) {
+      console.warn("[Login] No userCredentials found in localStorage");
+      setTimeout(() => {
+        toast.error("No user accounts found. Please contact administrator.");
+        setIsLoading(false);
+      }, 1000);
+      return;
+    }
+    
+    try {
+      const userCredentials = JSON.parse(userCredentialsStr);
+      const companies = JSON.parse(companiesStr || '[]');
+      
+      console.log("[Login] Found", userCredentials.length, "user accounts");
+      console.log("[Login] Credentials stored:", userCredentials.map((u: any) => ({ 
+        email: u.email, 
+        companyId: u.companyId, 
+        passwordLength: u.password?.length || 0 
+      })));
+      
+      // Find user with matching credentials
+      const user = userCredentials.find((u: any) => 
+        u.email === values.email && u.password === values.password
+      );
+      
+      console.log("[Login] User match found:", !!user);
+      
+      setTimeout(() => {
+        if (user) {
+          console.log("[Login] Checking company details for ID:", user.companyId);
+          const company = companies.find((c: any) => c.id === user.companyId);
+          
+          if (!company) {
+            console.error("[Login] Company not found for ID:", user.companyId);
+            toast.error("Company not found");
+            setIsLoading(false);
+            return;
+          }
+          
+          console.log("[Login] Company found:", company.name, "Active:", company.isActive);
+          
+          if (!company.isActive) {
+            console.log("[Login] Company is inactive");
+            toast.error("Your account has been paused. Please contact administrator.");
+            setIsLoading(false);
+            return;
+          }
+          
+          // Store user info in localStorage
+          const userData = { 
+            email: values.email, 
+            companyId: user.companyId,
+            companyName: company.name
+          };
+          
+          console.log("[Login] Setting currentUser:", userData);
+          localStorage.setItem("currentUser", JSON.stringify(userData));
+          
+          toast.success("Login successful");
+          navigate("/");
+        } else {
+          console.log("[Login] Invalid credentials - user not found");
+          toast.error("Invalid credentials. Please check your email and password.");
         }
-        
-        if (!company.isActive) {
-          toast.error("Your account has been paused. Please contact administrator.");
-          setIsLoading(false);
-          return;
-        }
-        
-        localStorage.setItem("currentUser", JSON.stringify({ 
-          email: values.email, 
-          companyId: user.companyId,
-          companyName: company.name
-        }));
-        
-        toast.success("Login successful");
-        navigate("/");
-      } else {
-        toast.error("Invalid credentials. Please check your email and password.");
-      }
+        setIsLoading(false);
+      }, 1000);
+    } catch (error) {
+      console.error("[Login] Error parsing localStorage data:", error);
+      toast.error("System error. Please try again later.");
       setIsLoading(false);
-    }, 1000);
+    }
   };
 
   return (
