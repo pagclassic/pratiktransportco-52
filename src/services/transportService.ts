@@ -403,13 +403,7 @@ export const createTransportCredentials = async (
   try {
     console.log('Creating transport credentials for company:', companyId);
     
-    // Fixed: Use the correct type parameters for the rpc method
-    // First type parameter is for the return type, second is for the parameters
-    const { data, error } = await supabase.rpc<boolean, {
-      company_id: string;
-      email_address: string;
-      password_hash: string;
-    }>(
+    const { data, error } = await supabase.rpc(
       'create_transport_credentials',
       {
         company_id: companyId,
