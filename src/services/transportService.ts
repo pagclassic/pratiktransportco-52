@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { TransportEntry, TransportCompany } from "@/types/transport";
 import { toast } from "sonner";
@@ -404,21 +403,19 @@ export const createTransportCredentials = async (
   try {
     console.log('Creating transport credentials for company:', companyId);
     
-    // Use a type assertion to resolve the TypeScript error
-    // This is necessary because the RPC function expects specific parameters
-    type RpcParams = {
+    // Fixed: Use the correct type parameters for the rpc method
+    // First type parameter is for the return type, second is for the parameters
+    const { data, error } = await supabase.rpc<boolean, {
       company_id: string;
       email_address: string;
       password_hash: string;
-    };
-    
-    const { data, error } = await supabase.rpc<any>(
+    }>(
       'create_transport_credentials',
       {
         company_id: companyId,
         email_address: email,
         password_hash: password
-      } as RpcParams
+      }
     );
 
     if (error) {
