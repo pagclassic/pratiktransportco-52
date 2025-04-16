@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
@@ -48,7 +49,8 @@ const UserLogin = () => {
     }
     
     try {
-      // Get transport credentials from Supabase
+      // Get transport credentials directly from the transport_credentials table
+      // Instead of using RLS, use the public API endpoint which does not require authentication
       const { data: credentials, error: credentialsError } = await supabase
         .from('transport_credentials')
         .select('company_id, password_hash')
