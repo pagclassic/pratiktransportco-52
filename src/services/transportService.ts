@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { TransportEntry, TransportCompany } from "@/types/transport";
 import { toast } from "sonner";
@@ -404,16 +403,15 @@ export const createTransportCredentials = async (
   try {
     console.log('Creating transport credentials for company:', companyId);
     
-    // Use PostgreSQL's built-in function instead of directly inserting
-    // The RPC function will be executed with the proper permissions
-    // We need to use 'as any' to work around the type issue
+    // Call the RPC function directly without type parameters
+    // This allows Supabase to infer the types
     const { data, error } = await supabase.rpc(
       'create_transport_credentials',
       {
         company_id: companyId,
         email_address: email,
         password_hash: password
-      } as any
+      }
     );
 
     if (error) {
