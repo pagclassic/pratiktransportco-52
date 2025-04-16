@@ -398,11 +398,12 @@ export const createTransportCredentials = async (
     
     // Use PostgreSQL's built-in function instead of directly inserting
     // The RPC function will be executed with the proper permissions
+    // We need to use `any` type here because the RPC function is not defined in the TypeScript types
     const { error } = await supabase.rpc('create_transport_credentials', {
       company_id: companyId,
       email_address: email,
       password_hash: password
-    });
+    } as any);
 
     if (error) {
       console.error('Error creating credentials:', error.message);
