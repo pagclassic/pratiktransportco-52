@@ -10,6 +10,7 @@ import {
   DialogHeader, 
   DialogTitle 
 } from '@/components/ui/dialog';
+import { AlertCircle } from 'lucide-react';
 
 interface AddCompanyDialogProps {
   isOpen: boolean;
@@ -56,6 +57,10 @@ const AddCompanyDialog: React.FC<AddCompanyDialogProps> = ({
               onChange={e => onInputChange('email', e.target.value)} 
               placeholder="email@example.com"
             />
+            <p className="text-xs text-muted-foreground">
+              <AlertCircle className="inline h-3 w-3 mr-1" />
+              Email must be unique for each company
+            </p>
           </div>
           <div className="space-y-2">
             <label htmlFor="password" className="text-sm font-medium">Password</label>

@@ -1,3 +1,4 @@
+
 import { supabase } from "@/integrations/supabase/client";
 import { TransportEntry, TransportCompany } from "@/types/transport";
 import { toast } from "sonner";
@@ -262,6 +263,26 @@ export const fetchTransportCompanies = async (): Promise<TransportCompany[]> => 
 export const createTransportCompany = async (company: TransportCompany): Promise<TransportCompany | null> => {
   try {
     console.log('Creating transport company:', company);
+    
+    // Check if a company with this email already exists
+    const { data: existingCompany, error: checkError } = await supabase
+      .from('transport_companies')
+      .select('id')
+      .eq('email', company.email)
+      .maybeSingle();
+    
+    if (checkError) {
+      console.error('Error checking existing company:', checkError.message);
+      toast.error('Failed to check existing companies');
+      return null;
+    }
+    
+    if (existingCompany) {
+      console.error('Company with this email already exists');
+      toast.error('A company with this email already exists');
+      return null;
+    }
+    
     const preparedCompany = prepareCompanyForDb(company);
     
     const { data, error } = await supabase
