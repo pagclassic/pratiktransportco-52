@@ -13,7 +13,8 @@ import {
   createTransportCompany, 
   updateTransportCompany, 
   deleteTransportCompany,
-  toggleTransportCompanyStatus 
+  toggleTransportCompanyStatus,
+  createTransportCredentials
 } from '@/services/transportService';
 import CompanyTable from './companies/CompanyTable';
 import AddCompanyDialog from './companies/AddCompanyDialog';
@@ -104,16 +105,15 @@ const AdminDashboard = () => {
       const createdCompany = await createTransportCompany(newCompanyEntry);
       
       if (createdCompany) {
-        const { error: credentialsError } = await supabase
-          .from('transport_credentials')
-          .insert({
-            company_id: createdCompany.id,
-            email: newCompany.email,
-            password_hash: newCompany.password
-          });
+        // Use the service function instead of direct supabase call
+        const success = await createTransportCredentials(
+          createdCompany.id,
+          newCompany.email,
+          newCompany.password
+        );
 
-        if (credentialsError) {
-          console.error('Error creating credentials:', credentialsError);
+        if (!success) {
+          console.error('Error creating credentials');
           toast.error('Failed to create transport credentials');
           await deleteTransportCompany(createdCompany.id);
           return;

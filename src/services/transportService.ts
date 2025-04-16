@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { TransportEntry, TransportCompany } from "@/types/transport";
 import { toast } from "sonner";
@@ -385,6 +384,37 @@ export const toggleTransportCompanyStatus = async (id: string, isActive: boolean
   } catch (error) {
     console.error('Failed to update company status:', error);
     toast.error(`Failed to ${isActive ? 'activate' : 'deactivate'} company`);
+    return false;
+  }
+};
+
+export const createTransportCredentials = async (
+  companyId: string,
+  email: string,
+  password: string
+): Promise<boolean> => {
+  try {
+    console.log('Creating transport credentials for company:', companyId);
+    
+    // Use PostgreSQL's built-in function instead of directly inserting
+    // The RPC function will be executed with the proper permissions
+    const { error } = await supabase.rpc('create_transport_credentials', {
+      company_id: companyId,
+      email_address: email,
+      password_hash: password
+    });
+
+    if (error) {
+      console.error('Error creating credentials:', error.message);
+      toast.error('Failed to create transport credentials');
+      return false;
+    }
+
+    console.log('Credentials created successfully');
+    return true;
+  } catch (error) {
+    console.error('Failed to create credentials:', error);
+    toast.error('Failed to create credentials');
     return false;
   }
 };
