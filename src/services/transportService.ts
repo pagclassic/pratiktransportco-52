@@ -7,6 +7,13 @@ import { Database } from "@/integrations/supabase/types";
 type TransportEntryInsert = Database['public']['Tables']['transport_entries']['Insert'];
 type TransportCompanyInsert = Database['public']['Tables']['transport_companies']['Insert'];
 
+// Define the type for our custom RPC function parameters
+type CreateTransportCredentialsParams = {
+  company_id: string;
+  email_address: string;
+  password_hash: string;
+};
+
 // Transform date objects for Supabase (Date objects to ISO strings)
 const prepareEntryForDb = (entry: TransportEntry): TransportEntryInsert => {
   console.log('Preparing entry for database:', entry);
@@ -398,12 +405,12 @@ export const createTransportCredentials = async (
     
     // Use PostgreSQL's built-in function instead of directly inserting
     // The RPC function will be executed with the proper permissions
-    // We need to use `any` type here because the RPC function is not defined in the TypeScript types
-    const { error } = await supabase.rpc('create_transport_credentials', {
+    // We provide the correct type for our custom RPC function
+    const { error } = await supabase.rpc<any>('create_transport_credentials', {
       company_id: companyId,
       email_address: email,
       password_hash: password
-    } as any);
+    } satisfies CreateTransportCredentialsParams);
 
     if (error) {
       console.error('Error creating credentials:', error.message);
