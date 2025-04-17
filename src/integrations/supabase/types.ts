@@ -147,7 +147,14 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      create_transport_credentials: {
+        Args: {
+          company_id: string
+          email_address: string
+          password_hash: string
+        }
+        Returns: boolean
+      }
     }
     Enums: {
       [_ in never]: never

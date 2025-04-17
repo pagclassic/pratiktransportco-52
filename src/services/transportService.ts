@@ -403,14 +403,15 @@ export const createTransportCredentials = async (
   try {
     console.log('Creating transport credentials for company:', companyId);
     
-    // Instead of using RPC (which is failing), let's directly insert into the transport_credentials table
-    const { error } = await supabase
-      .from('transport_credentials')
-      .insert({
+    // Use the RPC function that we've now created in the database
+    const { data, error } = await supabase.rpc(
+      'create_transport_credentials',
+      {
         company_id: companyId,
-        email: email,
+        email_address: email,
         password_hash: password
-      });
+      }
+    );
 
     if (error) {
       console.error('Error creating credentials:', error.message);
@@ -419,7 +420,7 @@ export const createTransportCredentials = async (
     }
 
     console.log('Credentials created successfully');
-    return true;
+    return data || true;
   } catch (error) {
     console.error('Failed to create credentials:', error);
     toast.error('Failed to create credentials');
