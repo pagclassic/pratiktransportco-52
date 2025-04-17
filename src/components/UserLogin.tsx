@@ -49,22 +49,25 @@ const UserLogin = () => {
     }
     
     try {
+      console.log("[Login] Checking transport credentials for:", values.email);
+      
       // Get transport credentials directly from the transport_credentials table
-      // Instead of using RLS, use the public API endpoint which does not require authentication
       const { data: credentials, error: credentialsError } = await supabase
         .from('transport_credentials')
         .select('company_id, password_hash')
         .eq('email', values.email)
         .single();
       
-      if (credentialsError || !credentials) {
+      if (credentialsError) {
         console.error("[Login] Credentials error:", credentialsError);
         toast.error("Invalid credentials. Please check your email and password.");
         setIsLoading(false);
         return;
       }
 
-      // Verify password (in a real app, we'd use proper password hashing)
+      console.log("[Login] Found credentials:", credentials);
+      
+      // Verify password (comparing directly with the stored password_hash)
       if (credentials.password_hash !== values.password) {
         console.error("[Login] Invalid password");
         toast.error("Invalid credentials. Please check your email and password.");
@@ -92,6 +95,8 @@ const UserLogin = () => {
         setIsLoading(false);
         return;
       }
+
+      console.log("[Login] Login successful for company:", company.name);
 
       // Store user info in localStorage
       const userData = { 
