@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { LogOut, Plus, Users } from 'lucide-react';
@@ -101,24 +102,34 @@ const AdminDashboard = () => {
         createdAt: new Date()
       };
       
+      // First create the company
       const createdCompany = await createTransportCompany(newCompanyEntry);
       
       if (createdCompany) {
-        const success = await createTransportCredentials(
+        // Then create the credentials
+        const credentialSuccess = await createTransportCredentials(
           createdCompany.id,
           newCompany.email,
           newCompany.password
         );
 
-        if (!success) {
+        if (!credentialSuccess) {
           console.error('Error creating credentials');
-          toast.error('Failed to create transport credentials. Company will be kept.');
+          toast.error('Failed to create transport credentials');
+          
+          // Optionally, you could delete the company here if credential creation fails
+          // This is commented out for now, but if you want a strict creation policy:
+          // await deleteTransportCompany(createdCompany.id);
+          // toast.error('Company creation cancelled due to credential creation failure');
+          // return;
+        } else {
+          toast.success('Company added successfully with login credentials');
         }
         
+        // Add the new company to the state
         setCompanies([createdCompany, ...companies]);
         setNewCompany({ name: '', email: '', password: '' });
         setIsAddDialogOpen(false);
-        toast.success('Company added successfully');
       }
     } catch (error) {
       console.error('Error adding company:', error);
@@ -148,6 +159,7 @@ const AdminDashboard = () => {
         
         setIsEditDialogOpen(false);
         setEditingCompany(null);
+        toast.success('Company updated successfully');
       }
     } catch (error) {
       console.error('Error updating company:', error);

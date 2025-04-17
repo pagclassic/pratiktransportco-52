@@ -403,7 +403,7 @@ export const createTransportCredentials = async (
   try {
     console.log('Creating transport credentials for company:', companyId);
     
-    // Use the RPC function that we've now created in the database
+    // Use the RPC function with correct parameter names
     const { data, error } = await supabase.rpc(
       'create_transport_credentials',
       {
