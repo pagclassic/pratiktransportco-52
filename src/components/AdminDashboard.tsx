@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { LogOut, Plus, Users } from 'lucide-react';
@@ -105,7 +104,6 @@ const AdminDashboard = () => {
       const createdCompany = await createTransportCompany(newCompanyEntry);
       
       if (createdCompany) {
-        // Use the service function instead of direct supabase call
         const success = await createTransportCredentials(
           createdCompany.id,
           newCompany.email,
@@ -114,9 +112,7 @@ const AdminDashboard = () => {
 
         if (!success) {
           console.error('Error creating credentials');
-          toast.error('Failed to create transport credentials');
-          await deleteTransportCompany(createdCompany.id);
-          return;
+          toast.error('Failed to create transport credentials. Company will be kept.');
         }
         
         setCompanies([createdCompany, ...companies]);

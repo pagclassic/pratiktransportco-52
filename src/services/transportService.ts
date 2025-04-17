@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { TransportEntry, TransportCompany } from "@/types/transport";
 import { toast } from "sonner";
@@ -404,15 +403,14 @@ export const createTransportCredentials = async (
   try {
     console.log('Creating transport credentials for company:', companyId);
     
-    // Fixed: Use type assertion to handle the RPC call properly
-    const { data, error } = await supabase.rpc(
-      'create_transport_credentials' as any,
-      {
+    // Instead of using RPC (which is failing), let's directly insert into the transport_credentials table
+    const { error } = await supabase
+      .from('transport_credentials')
+      .insert({
         company_id: companyId,
-        email_address: email,
+        email: email,
         password_hash: password
-      } as CreateTransportCredentialsParams
-    );
+      });
 
     if (error) {
       console.error('Error creating credentials:', error.message);
