@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
@@ -54,20 +53,18 @@ const UserLogin = () => {
       // Get transport credentials directly from the transport_credentials table
       const { data: credentials, error: credentialsError } = await supabase
         .from('transport_credentials')
-        .select('company_id, password_hash')
+        .select('company_id, password_hash, email')
         .eq('email', values.email)
         .single();
       
-      if (credentialsError) {
+      if (credentialsError || !credentials) {
         console.error("[Login] Credentials error:", credentialsError);
         toast.error("Invalid credentials. Please check your email and password.");
         setIsLoading(false);
         return;
       }
 
-      console.log("[Login] Found credentials:", credentials);
-      
-      // Verify password (comparing directly with the stored password_hash)
+      // Basic password verification (in a real app, use proper hashing)
       if (credentials.password_hash !== values.password) {
         console.error("[Login] Invalid password");
         toast.error("Invalid credentials. Please check your email and password.");
