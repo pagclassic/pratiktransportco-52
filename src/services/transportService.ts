@@ -30,7 +30,7 @@ const prepareEntryForDb = (entry: TransportEntry): TransportEntryInsert => {
     advance_amount: entry.advanceAmount,
     advance_type: entry.advanceType,
     balance_status: entry.balanceStatus,
-    company_id: entry.companyId // Add company_id field
+    company_id: entry.companyId // Added company_id field
   };
 };
 
@@ -90,16 +90,10 @@ export const fetchTransportEntries = async (): Promise<TransportEntry[]> => {
     const user = JSON.parse(userData);
     const companyId = user.companyId;
     
-    if (!companyId) {
-      console.error('No company ID found in user data');
-      return [];
-    }
-    
+    console.log(`User data:`, user);
     console.log(`Fetching entries for company ID: ${companyId}`);
     
-    // NOTE: Since we're not using real UUID structure from Supabase,
-    // and the error shows invalid UUID format, let's try fetching all entries
-    // instead of filtering by company_id
+    // Use auth API instead of filtering client-side
     const { data, error } = await supabase
       .from('transport_entries')
       .select('*')
@@ -117,12 +111,10 @@ export const fetchTransportEntries = async (): Promise<TransportEntry[]> => {
     }
 
     console.log(`Successfully fetched ${data.length} entries`);
+    console.log('Entries data:', data);
     
-    // Filter entries by company ID in JavaScript instead of at database level
-    // This is a temporary solution until proper UUIDs are set up
-    return data
-      .filter(entry => entry.company_id === companyId || !entry.company_id)
-      .map(entry => transformDbEntry(entry));
+    // We now rely on RLS policies to filter entries, so no need to filter here
+    return data.map(entry => transformDbEntry(entry));
   } catch (error) {
     console.error('Failed to fetch entries:', error);
     toast.error('Failed to load entries');
@@ -157,8 +149,12 @@ export const createTransportEntry = async (entry: TransportEntry): Promise<Trans
       companyId: companyId
     };
     
+    console.log('Entry with company ID:', completeEntry);
+    
     // Convert to database format
     const preparedEntry = prepareEntryForDb(completeEntry);
+
+    console.log('Prepared entry for database:', preparedEntry);
     
     // Insert the entry with the company_id
     const { data, error } = await supabase

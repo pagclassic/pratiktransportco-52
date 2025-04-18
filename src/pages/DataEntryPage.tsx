@@ -1,3 +1,4 @@
+
 import TransportForm from "@/components/TransportForm";
 import { TransportEntry } from "@/types/transport";
 import { useNavigate } from "react-router-dom";
@@ -7,14 +8,43 @@ import { ArrowLeft } from "lucide-react";
 import { createTransportEntry } from "@/services/transportService";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
+import { useEffect, useState } from "react";
 
 const DataEntryPage = () => {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+  const [companyId, setCompanyId] = useState<string | undefined>(undefined);
+  
+  useEffect(() => {
+    // Get the company ID from localStorage
+    const userData = localStorage.getItem('currentUser');
+    if (userData) {
+      const user = JSON.parse(userData);
+      setCompanyId(user.companyId);
+    } else {
+      // If no user data is found, redirect to login
+      toast.error('User data not found. Please log in.');
+      navigate('/login');
+    }
+  }, [navigate]);
   
   const handleSubmit = async (formData) => {
     try {
-      const newEntry = await createTransportEntry(formData as TransportEntry);
+      if (!companyId) {
+        toast.error('Company ID not found. Please log in again.');
+        navigate('/login');
+        return;
+      }
+      
+      // Explicitly set the company ID in the form data
+      const entryWithCompany = {
+        ...formData,
+        companyId: companyId
+      } as TransportEntry;
+      
+      console.log('Submitting entry with company ID:', entryWithCompany);
+      
+      const newEntry = await createTransportEntry(entryWithCompany);
       if (newEntry) {
         await queryClient.invalidateQueries({ queryKey: ['transportEntries'] });
         toast.success('Entry created successfully');

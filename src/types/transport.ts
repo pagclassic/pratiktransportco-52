@@ -13,7 +13,7 @@ export interface TransportEntry {
   advanceType: 'Cash' | 'Bank Transfer' | 'Check' | 'UPI';
   balanceStatus: 'PAID' | 'UNPAID' | 'PARTIAL';
   balanceDate: Date | null;
-  companyId?: string;
+  companyId: string; // Changed from optional to required
 }
 
 export interface TransportCompany {
