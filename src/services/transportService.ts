@@ -160,13 +160,10 @@ export const createTransportEntry = async (entry: TransportEntry): Promise<Trans
     // Convert to database format
     const preparedEntry = prepareEntryForDb(completeEntry);
     
-    // Since company_id might not be a valid UUID, remove it temporarily
-    // and create the entry without it
-    const { company_id, ...entryWithoutCompanyId } = preparedEntry;
-    
+    // Insert the entry with the company_id
     const { data, error } = await supabase
       .from('transport_entries')
-      .insert(entryWithoutCompanyId)
+      .insert(preparedEntry)
       .select()
       .single();
 
