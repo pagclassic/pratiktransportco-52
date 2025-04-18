@@ -12,6 +12,7 @@ import NotFound from "./pages/NotFound";
 import AdminDashboard from "./components/AdminDashboard";
 import UserLogin from "./components/UserLogin";
 import EmailVerification from "./components/EmailVerification";
+import { supabase } from "@/integrations/supabase/client";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -52,6 +53,21 @@ const App = () => {
   useEffect(() => {
     console.clear();
     console.log("App initialized");
+    
+    // Set up auth state change listener
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      console.log("Auth state changed:", event, session?.user?.email);
+      
+      if (event === 'SIGNED_OUT') {
+        localStorage.removeItem('currentUser');
+        localStorage.removeItem('admin');
+        console.log("User signed out, cleared localStorage");
+      }
+    });
+    
+    return () => {
+      subscription.unsubscribe();
+    };
   }, []);
 
   return (

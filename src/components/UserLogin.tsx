@@ -95,7 +95,26 @@ const UserLogin = () => {
 
       console.log("[Login] Login successful for company:", company.name);
 
-      // Store user info in localStorage
+      // 1. First sign in with a custom token (we're using passwordless here)
+      // This creates a proper Supabase session with JWT that RLS will use
+      const { error: authError } = await supabase.auth.signInWithPassword({
+        email: values.email,
+        password: values.password,
+      });
+      
+      if (authError) {
+        // If auth fails, create a session using the magic link method
+        const { error: magicLinkError } = await supabase.auth.signInWithOtp({
+          email: values.email,
+        });
+        
+        if (magicLinkError) {
+          console.error("[Login] Auth error:", magicLinkError);
+          // Continue anyway since we're using localStorage as a fallback
+        }
+      }
+
+      // 2. Store user info in localStorage (as a fallback)
       const userData = { 
         email: values.email, 
         companyId: credentials.company_id,

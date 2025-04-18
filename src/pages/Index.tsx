@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import TransportEntries from "@/components/TransportEntries";
@@ -11,6 +10,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { TransportEntry } from "@/types/transport";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
+import { supabase } from "@/integrations/supabase/client";
 
 const Index = () => {
   const navigate = useNavigate();
@@ -69,10 +69,24 @@ const Index = () => {
     setActiveTab(value as "entries" | "reports");
   };
 
-  const handleLogout = () => {
-    localStorage.removeItem('currentUser');
-    toast.success('Logged out successfully');
-    navigate('/login');
+  const handleLogout = async () => {
+    try {
+      // Sign out from Supabase auth
+      await supabase.auth.signOut();
+      
+      // Clear local storage
+      localStorage.removeItem('currentUser');
+      
+      toast.success('Logged out successfully');
+      navigate('/login');
+    } catch (error) {
+      console.error('Error during logout:', error);
+      
+      // Fallback: still remove from localStorage even if Supabase auth fails
+      localStorage.removeItem('currentUser');
+      toast.success('Logged out successfully');
+      navigate('/login');
+    }
   };
 
   return (
