@@ -117,12 +117,32 @@ const TransportForm = ({ onSubmit, initialData, isEditing = false }: TransportFo
       // Simulate API call
       await new Promise((resolve) => setTimeout(resolve, 500));
       
+      // Get the company ID from localStorage if not editing
+      let companyId = initialData?.companyId;
+      
+      if (!companyId) {
+        const userData = localStorage.getItem('currentUser');
+        if (userData) {
+          const user = JSON.parse(userData);
+          companyId = user.companyId;
+        }
+      }
+      
+      if (!companyId) {
+        toast({
+          title: "Error",
+          description: "Company ID not found. Please log in again.",
+          variant: "destructive",
+        });
+        return;
+      }
+      
       // Ensure all required fields are present according to TransportEntry type
       const entryData: TransportEntry = {
         id: initialData?.id || uuidv4(),
         date: values.date,
         vehicleNumber: values.vehicleNumber,
-        weight: values.weight, // Changed from driverName
+        weight: values.weight,
         driverMobile: values.driverMobile,
         place: values.place,
         transportName: values.transportName,
@@ -132,6 +152,7 @@ const TransportForm = ({ onSubmit, initialData, isEditing = false }: TransportFo
         advanceType: values.advanceType,
         balanceStatus: values.balanceStatus,
         balanceDate: values.balanceDate,
+        companyId: companyId, // Add the company ID
       };
       
       onSubmit(entryData);

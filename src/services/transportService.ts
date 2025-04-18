@@ -30,7 +30,7 @@ const prepareEntryForDb = (entry: TransportEntry): TransportEntryInsert => {
     advance_amount: entry.advanceAmount,
     advance_type: entry.advanceType,
     balance_status: entry.balanceStatus,
-    company_id: entry.companyId // Added company_id field
+    company_id: entry.companyId // Make sure company_id is always included
   };
 };
 
@@ -88,12 +88,11 @@ export const fetchTransportEntries = async (): Promise<TransportEntry[]> => {
     }
     
     const user = JSON.parse(userData);
-    const companyId = user.companyId;
     
     console.log(`User data:`, user);
-    console.log(`Fetching entries for company ID: ${companyId}`);
+    console.log(`User is trying to fetch entries.`);
     
-    // Use auth API instead of filtering client-side
+    // Let RLS policies handle filtering
     const { data, error } = await supabase
       .from('transport_entries')
       .select('*')
@@ -113,7 +112,7 @@ export const fetchTransportEntries = async (): Promise<TransportEntry[]> => {
     console.log(`Successfully fetched ${data.length} entries`);
     console.log('Entries data:', data);
     
-    // We now rely on RLS policies to filter entries, so no need to filter here
+    // We now rely on RLS policies to filter entries
     return data.map(entry => transformDbEntry(entry));
   } catch (error) {
     console.error('Failed to fetch entries:', error);
@@ -124,29 +123,31 @@ export const fetchTransportEntries = async (): Promise<TransportEntry[]> => {
 
 export const createTransportEntry = async (entry: TransportEntry): Promise<TransportEntry | null> => {
   try {
-    // Get current user's company ID
-    const userData = localStorage.getItem('currentUser');
-    if (!userData) {
-      toast.error('User data not found');
-      return null;
+    // Get current user's company ID if not provided
+    if (!entry.companyId) {
+      const userData = localStorage.getItem('currentUser');
+      if (!userData) {
+        toast.error('User data not found');
+        return null;
+      }
+      
+      const user = JSON.parse(userData);
+      if (!user.companyId) {
+        toast.error('Company ID not found');
+        return null;
+      }
+      
+      entry.companyId = user.companyId;
     }
     
-    const user = JSON.parse(userData);
-    const companyId = user.companyId;
-    
-    if (!companyId) {
-      toast.error('Company ID not found');
-      return null;
-    }
-    
-    console.log('Creating transport entry for company:', companyId);
+    console.log('Creating transport entry for company:', entry.companyId);
     const { id, ...entryData } = entry;
     
     // Create a complete entry object with company ID
     const completeEntry: TransportEntry = {
       ...entryData,
       id: id, // Maintain the ID
-      companyId: companyId
+      companyId: entry.companyId
     };
     
     console.log('Entry with company ID:', completeEntry);
